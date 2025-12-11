@@ -9,17 +9,18 @@ import com.carlosjimz87.nqueens.domain.model.Cell
 import com.carlosjimz87.nqueens.domain.model.GameStatus
 import com.carlosjimz87.nqueens.presentation.board.event.UiEvent
 import com.carlosjimz87.nqueens.presentation.board.state.UiState
-import kotlinx.coroutines.Job
+import com.carlosjimz87.nqueens.presentation.timer.CoroutineGameTimer
+import com.carlosjimz87.nqueens.presentation.timer.GameTimer
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 
 class BoardViewModel(
-    initialSize: Int = Constants.DEFAULT_COLUMNS_ROWS
+    initialSize: Int = Constants.DEFAULT_COLUMNS_ROWS,
+    var timer: GameTimer? = null
 ) : ViewModel() {
 
     private val _boardSize = MutableStateFlow<Int?>(null)
@@ -40,13 +41,14 @@ class BoardViewModel(
     private val _gameStatus = MutableStateFlow<GameStatus?>(null)
     val gameStatus: StateFlow<GameStatus?> = _gameStatus
 
-    private val _elapsedMillis = MutableStateFlow(0L)
-    val elapsedMillis: StateFlow<Long> = _elapsedMillis
+    val elapsedMillis: StateFlow<Long> = timer?.elapsedMillis ?: MutableStateFlow(0L)
 
     private var movesCount: Int = 0
-    private var timerJob: Job? = null
 
     init {
+        if (timer == null){
+            timer = CoroutineGameTimer(viewModelScope)
+        }
         applySize(initialSize)
     }
 
@@ -54,33 +56,11 @@ class BoardViewModel(
         applySize(newSize)
     }
 
-    private fun startTimerIfNeeded() {
-        if (timerJob != null) return
-
-        timerJob = viewModelScope.launch {
-            val base = System.currentTimeMillis() - _elapsedMillis.value
-            while (isActive) {
-                delay(1000)
-                _elapsedMillis.value = System.currentTimeMillis() - base
-            }
-        }
-    }
-
-    private fun stopTimer() {
-        timerJob?.cancel()
-        timerJob = null
-    }
-
-    private fun resetTimer() {
-        stopTimer()
-        _elapsedMillis.value = 0L
-    }
-
     fun onCellClicked(cell: Cell) {
         val current = _queens.value
 
         if (current.isEmpty()) {
-            startTimerIfNeeded()
+            timer?.start()
         }
 
         movesCount++
@@ -112,7 +92,7 @@ class BoardViewModel(
                     _boardSize.value = size
                     _queens.value = emptySet()
                     movesCount = 0
-                    resetTimer()
+                    timer?.reset()
                     _uiState.value = UiState.Idle
                     _gameStatus.value = GameStatus.NotStarted(size)
                 }
@@ -135,11 +115,11 @@ class BoardViewModel(
 
         _gameStatus.value = when {
             queensCount == 0 -> {
-                resetTimer()
+                timer?.reset()
                 GameStatus.NotStarted(size)
             }
             queensCount == size && conflicts == 0 -> {
-                stopTimer()
+                timer?.stop()
                 GameStatus.Solved(
                     size = size,
                     moves = movesCount
