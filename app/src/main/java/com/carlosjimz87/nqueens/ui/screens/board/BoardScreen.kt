@@ -22,7 +22,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.carlosjimz87.nqueens.presentation.audio.AndroidSoundEffectPlayer
 import com.carlosjimz87.nqueens.presentation.board.event.UiEvent
 import com.carlosjimz87.nqueens.presentation.board.state.UiState
@@ -34,7 +34,7 @@ import com.carlosjimz87.nqueens.ui.composables.game.GameStatusBar
 @Composable
 fun BoardScreen(
     modifier: Modifier = Modifier,
-    viewModel: BoardViewModel = viewModel()
+    viewModel: BoardViewModel = hiltViewModel()
 ) {
 
     val cs = MaterialTheme.colorScheme

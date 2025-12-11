@@ -24,7 +24,7 @@ class BoardViewModelTest {
 
     @Test
     fun `init with valid initial size sets boardSize and ends Idle`() = runTest {
-        val vm = BoardViewModel(initialSize = 8, FakeGameTimer())
+        val vm = BoardViewModel( FakeGameTimer())
 
         advanceUntilIdle()
 
@@ -34,7 +34,7 @@ class BoardViewModelTest {
 
     @Test
     fun `onSizeChanged with valid new size updates boardSize goes Idle and clears queens`() = runTest {
-        val vm = BoardViewModel(initialSize = 8, FakeGameTimer())
+        val vm = BoardViewModel( FakeGameTimer())
         advanceUntilIdle()
 
         // add some queens before size change
@@ -53,7 +53,7 @@ class BoardViewModelTest {
 
     @Test
     fun `onSizeChanged with invalid size emits BoardInvalid(small) and keeps last valid boardSize and queens`() = runTest {
-        val vm = BoardViewModel(initialSize = 8, FakeGameTimer())
+        val vm = BoardViewModel( FakeGameTimer())
         advanceUntilIdle()
 
         val queenCell = Cell(row = 0, col = 0)
@@ -76,7 +76,7 @@ class BoardViewModelTest {
 
     @Test
     fun `onSizeChanged with invalid size emits BoardInvalid(big) and keeps last valid boardSize`() = runTest {
-        val vm = BoardViewModel(initialSize = 8, FakeGameTimer())
+        val vm = BoardViewModel( FakeGameTimer())
         advanceUntilIdle()
 
         vm.onSizeChanged(22)
@@ -93,7 +93,7 @@ class BoardViewModelTest {
 
     @Test
     fun `onSizeChanged with same size does nothing`() = runTest {
-        val vm = BoardViewModel(initialSize = 8, FakeGameTimer())
+        val vm = BoardViewModel( FakeGameTimer())
         advanceUntilIdle()
 
         val queenCell = Cell(row = 0, col = 0)
@@ -114,7 +114,7 @@ class BoardViewModelTest {
 
     @Test
     fun `onCellClicked adds queen when cell is empty`() = runTest {
-        val vm = BoardViewModel(initialSize = 8,FakeGameTimer())
+        val vm = BoardViewModel(FakeGameTimer())
         advanceUntilIdle()
 
         val cell = Cell(row = 3, col = 4)
@@ -127,7 +127,7 @@ class BoardViewModelTest {
 
     @Test
     fun `onCellClicked removes queen when cell already has queen`() = runTest {
-        val vm = BoardViewModel(initialSize = 8, FakeGameTimer())
+        val vm = BoardViewModel( FakeGameTimer())
         advanceUntilIdle()
 
         val cell = Cell(row = 3, col = 4)
@@ -140,7 +140,7 @@ class BoardViewModelTest {
 
     @Test
     fun `onCellClicked on empty cell adds queen and emits QueenPlaced`() = runTest {
-        val vm = BoardViewModel(initialSize = 8, FakeGameTimer())
+        val vm = BoardViewModel( FakeGameTimer())
         advanceUntilIdle()
 
         val cell = Cell(row = 0, col = 0)
@@ -164,7 +164,7 @@ class BoardViewModelTest {
 
     @Test
     fun `onCellClicked on occupied cell removes queen and does not emit new QueenPlaced`() = runTest {
-        val vm = BoardViewModel(initialSize = 8,FakeGameTimer())
+        val vm = BoardViewModel(FakeGameTimer())
         advanceUntilIdle()
 
         val cell = Cell(row = 0, col = 0)
@@ -191,7 +191,7 @@ class BoardViewModelTest {
 
     @Test
     fun `init with valid initial size sets NotStarted and elapsed is zero`() = runTest {
-        val vm = BoardViewModel(initialSize = 8, FakeGameTimer())
+        val vm = BoardViewModel( FakeGameTimer())
 
         advanceUntilIdle()
 
@@ -206,7 +206,7 @@ class BoardViewModelTest {
 
     @Test
     fun `placing first queen moves game to InProgress`() = runTest {
-        val vm = BoardViewModel(initialSize = 8, FakeGameTimer())
+        val vm = BoardViewModel( FakeGameTimer())
         advanceUntilIdle()
 
         val cell = Cell(row = 0, col = 0)
@@ -225,7 +225,7 @@ class BoardViewModelTest {
 
     @Test
     fun `removing all queens returns game to NotStarted and resets timer`() = runTest {
-        val vm = BoardViewModel(initialSize = 8, FakeGameTimer())
+        val vm = BoardViewModel( FakeGameTimer())
         advanceUntilIdle()
 
         val cell = Cell(row = 0, col = 0)
@@ -249,7 +249,7 @@ class BoardViewModelTest {
 
     @Test
     fun `changing to a new valid size resets queens moves and timer and sets NotStarted`() = runTest {
-        val vm = BoardViewModel(initialSize = 8, FakeGameTimer())
+        val vm = BoardViewModel( FakeGameTimer())
         advanceUntilIdle()
 
         // Place some queens to simulate a game in progress
@@ -275,10 +275,16 @@ class BoardViewModelTest {
 
     @Test
     fun `placing N queens with zero conflicts moves game to Solved`() = runTest {
-        val vm = BoardViewModel(initialSize = 4, FakeGameTimer())
+        val vm = BoardViewModel(timer = FakeGameTimer())
+
         advanceUntilIdle()
 
-        // For now, conflicts are always 0, so any 4 distinct cells will trigger Solved
+        // Override default size (e.g. 8) and set 4 for this test
+        vm.onSizeChanged(4)
+
+        advanceUntilIdle()
+
+        // For now, conflicts = 0, so any 4 distinct cells will trigger Solved
         vm.onCellClicked(Cell(row = 0, col = 0))
         vm.onCellClicked(Cell(row = 1, col = 1))
         vm.onCellClicked(Cell(row = 2, col = 2))
@@ -291,14 +297,13 @@ class BoardViewModelTest {
         status as GameStatus.Solved
 
         assertEquals(4, status.size)
-        // We just check moves are at least the number of placements
         assertTrue(status.moves >= 4)
     }
 
     @Test
     fun `first queen starts timer`() = runTest {
         val timer = FakeGameTimer()
-        val vm = BoardViewModel(initialSize = 8, timer = timer)
+        val vm = BoardViewModel( timer = timer)
 
         advanceUntilIdle()
 
