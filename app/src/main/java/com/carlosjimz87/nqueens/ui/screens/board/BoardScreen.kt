@@ -1,7 +1,5 @@
 package com.carlosjimz87.nqueens.ui.screens.board
 
-import android.media.MediaPlayer
-import android.media.SoundPool
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -16,7 +14,6 @@ import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -26,47 +23,46 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.carlosjimz87.nqueens.R
 import com.carlosjimz87.nqueens.presentation.audio.AndroidSoundEffectPlayer
 import com.carlosjimz87.nqueens.presentation.board.event.UiEvent
 import com.carlosjimz87.nqueens.presentation.board.state.UiState
 import com.carlosjimz87.nqueens.presentation.board.viewmodel.BoardViewModel
 import com.carlosjimz87.nqueens.ui.composables.board.Board
 import com.carlosjimz87.nqueens.ui.composables.board.InvalidBoard
+import com.carlosjimz87.nqueens.ui.composables.game.GameStatusBar
 
 @Composable
 fun BoardScreen(
     modifier: Modifier = Modifier,
     viewModel: BoardViewModel = viewModel()
 ) {
+
     val cs = MaterialTheme.colorScheme
     val typography = MaterialTheme.typography
+
     val boardSize by viewModel.boardSize.collectAsState()
     val uiState by viewModel.uiState.collectAsState()
     val queens by viewModel.queens.collectAsState()
+    val gameStatus by viewModel.gameStatus.collectAsState()
+    val elapsedMillis by viewModel.elapsedMillis.collectAsState()
 
     val snackbarHostState = remember { SnackbarHostState() }
     val context = LocalContext.current
-
-    val soundPlayer = remember {
-        AndroidSoundEffectPlayer(context)
-    }
+    val soundPlayer = remember { AndroidSoundEffectPlayer(context) }
 
     val isLoading = uiState is UiState.Loading
 
     LaunchedEffect(uiState) {
         if (uiState is UiState.BoardInvalid) {
-            val invalid = uiState
-            snackbarHostState.showSnackbar((invalid as UiState.BoardInvalid).message)
+            val invalid = uiState as UiState.BoardInvalid
+            snackbarHostState.showSnackbar(invalid.message)
         }
     }
 
     LaunchedEffect(Unit) {
         viewModel.events.collect { event ->
             when (event) {
-                UiEvent.QueenPlaced -> {
-                    soundPlayer.playQueenPlaced()
-                }
+                UiEvent.QueenPlaced -> soundPlayer.playQueenPlaced()
             }
         }
     }
@@ -85,6 +81,12 @@ fun BoardScreen(
             Text(
                 text = "Current N = ${boardSize ?: "-"}",
                 style = typography.titleMedium
+            )
+
+            GameStatusBar(
+                status = gameStatus,
+                elapsedMillis = elapsedMillis,
+                modifier = Modifier.fillMaxWidth()
             )
 
             Column(
