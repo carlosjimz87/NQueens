@@ -6,21 +6,20 @@ import com.carlosjimz87.nqueens.common.Constants
 import com.carlosjimz87.nqueens.common.validateNQueensBoardSize
 import com.carlosjimz87.nqueens.domain.error.BoardError
 import com.carlosjimz87.nqueens.presentation.board.state.UiState
-import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 
 class BoardViewModel(
-    private val initialSize: Int = Constants.DEFAULT_COLUMNS_ROWS
+    initialSize: Int = Constants.DEFAULT_COLUMNS_ROWS
 ) : ViewModel() {
 
     private val _boardSize = MutableStateFlow<Int?>(null)
     val boardSize: StateFlow<Int?> = _boardSize
 
-    private val _errors = MutableSharedFlow<UiState.BoardInvalid>()
-    val errors: SharedFlow<UiState.BoardInvalid> = _errors
+    private val _uiState = MutableStateFlow<UiState>(UiState.Idle)
+    val uiState: StateFlow<UiState> = _uiState
 
     init {
         applySize(initialSize)
@@ -31,15 +30,19 @@ class BoardViewModel(
     }
 
     private fun applySize(size: Int) {
-        when (val validation = validateNQueensBoardSize(size)) {
-            BoardError.NoError -> {
-                _boardSize.value = size
-            }
+        if (_boardSize.value == size) return
 
-            else -> {
-                _boardSize.value = null
-                viewModelScope.launch {
-                    _errors.emit(
+        viewModelScope.launch {
+            _uiState.emit(UiState.Loading)
+
+            delay(150)
+            when (val validation = validateNQueensBoardSize(size)) {
+                BoardError.NoError -> {
+                    _boardSize.value = size
+                    _uiState.value = UiState.Idle
+                }
+                else -> {
+                    _uiState.emit(
                         UiState.BoardInvalid(
                             message = "Invalid size: $size",
                             error = validation
