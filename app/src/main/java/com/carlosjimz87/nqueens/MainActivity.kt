@@ -11,6 +11,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
+import com.carlosjimz87.nqueens.ui.screens.board.ColorDemoScreen
 import com.carlosjimz87.nqueens.ui.theme.NQueensTheme
 
 class MainActivity : ComponentActivity() {
@@ -20,28 +21,41 @@ class MainActivity : ComponentActivity() {
         setContent {
             NQueensTheme {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    Greeting(
-                        name = "Android",
-                        modifier = Modifier.padding(innerPadding)
-                    )
+                    ColorDemoScreen(Modifier.padding(innerPadding))
                 }
             }
         }
     }
 }
 
+@Preview(showBackground = true, name = "Light Theme")
 @Composable
-fun Greeting(name: String, modifier: Modifier = Modifier) {
-    Text(
-        text = "Hello $name!",
-        modifier = modifier
-    )
+fun ColorDemoLightPreview() {
+    NQueensTheme(darkTheme = false, dynamicColor = false) {
+        ColorDemoScreen()
+    }
 }
 
-@Preview(showBackground = true)
+@Preview(showBackground = true, name = "Dark Theme")
 @Composable
-fun GreetingPreview() {
-    NQueensTheme {
-        Greeting("Android")
+fun ColorDemoDarkPreview() {
+    NQueensTheme(darkTheme = true, dynamicColor = false) {
+        ColorDemoScreen()
+    }
+}
+
+@Preview(showBackground = true, name = "Light Theme - Dynamic")
+@Composable
+fun ColorDemoLightDynamicPreview() {
+    NQueensTheme(darkTheme = false, dynamicColor = true) {
+        ColorDemoScreen()
+    }
+}
+
+@Preview(showBackground = true, name = "Dark Theme - Dynamic")
+@Composable
+fun ColorDemoDarkDynamicPreview() {
+    NQueensTheme(darkTheme = true, dynamicColor = true) {
+        ColorDemoScreen()
     }
 }
