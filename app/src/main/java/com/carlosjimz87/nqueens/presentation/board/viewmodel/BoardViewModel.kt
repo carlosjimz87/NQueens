@@ -53,6 +53,7 @@ class BoardViewModel(
                 BoardError.NoError -> {
                     _boardSize.value = size
                     _uiState.value = UiState.Idle
+                    _queens.value = emptySet()
                 }
                 else -> {
                     _uiState.emit(
