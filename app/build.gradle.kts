@@ -2,7 +2,6 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
-    alias(libs.plugins.hilt.android)
     kotlin("kapt")
 }
 
@@ -62,10 +61,9 @@ dependencies {
     // lifecycle viewmodel
     implementation(libs.androidx.lifecycle.viewmodel.compose)
 
-    // hilt
-    implementation(libs.dagger.hilt.android)
-    kapt(libs.dagger.hilt.compiler)
-    implementation(libs.compose.hilt.navigation)
+    // koin
+    implementation(libs.koin.android)
+    implementation(libs.koin.android.compose)
 
     // testing
     testImplementation(libs.junit)

@@ -22,7 +22,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
 import com.carlosjimz87.nqueens.presentation.audio.AndroidSoundEffectPlayer
 import com.carlosjimz87.nqueens.presentation.board.event.UiEvent
 import com.carlosjimz87.nqueens.presentation.board.state.UiState
@@ -30,11 +29,12 @@ import com.carlosjimz87.nqueens.presentation.board.viewmodel.BoardViewModel
 import com.carlosjimz87.nqueens.ui.composables.board.Board
 import com.carlosjimz87.nqueens.ui.composables.board.InvalidBoard
 import com.carlosjimz87.nqueens.ui.composables.game.GameStatusBar
+import org.koin.androidx.compose.koinViewModel
 
 @Composable
 fun BoardScreen(
     modifier: Modifier = Modifier,
-    viewModel: BoardViewModel = hiltViewModel()
+    viewModel: BoardViewModel = koinViewModel()
 ) {
 
     val cs = MaterialTheme.colorScheme
