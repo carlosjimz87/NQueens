@@ -27,6 +27,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.carlosjimz87.nqueens.R
+import com.carlosjimz87.nqueens.presentation.audio.AndroidSoundEffectPlayer
 import com.carlosjimz87.nqueens.presentation.board.event.UiEvent
 import com.carlosjimz87.nqueens.presentation.board.state.UiState
 import com.carlosjimz87.nqueens.presentation.board.viewmodel.BoardViewModel
@@ -47,14 +48,8 @@ fun BoardScreen(
     val snackbarHostState = remember { SnackbarHostState() }
     val context = LocalContext.current
 
-    val mediaPlayer = remember {
-        MediaPlayer.create(context, R.raw.place)
-    }
-
-    DisposableEffect(Unit) {
-        onDispose {
-            mediaPlayer.release()
-        }
+    val soundPlayer = remember {
+        AndroidSoundEffectPlayer(context)
     }
 
     val isLoading = uiState is UiState.Loading
@@ -70,13 +65,12 @@ fun BoardScreen(
         viewModel.events.collect { event ->
             when (event) {
                 UiEvent.QueenPlaced -> {
-                    mediaPlayer.seekTo(0)
-                    mediaPlayer.start()
+                    soundPlayer.playQueenPlaced()
                 }
             }
         }
     }
-    
+
     Scaffold(
         modifier = modifier.fillMaxSize(),
         snackbarHost = { SnackbarHost(snackbarHostState) }
