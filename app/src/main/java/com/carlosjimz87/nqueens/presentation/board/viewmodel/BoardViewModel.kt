@@ -6,9 +6,12 @@ import com.carlosjimz87.nqueens.common.Constants
 import com.carlosjimz87.nqueens.common.validateNQueensBoardSize
 import com.carlosjimz87.nqueens.domain.error.BoardError
 import com.carlosjimz87.nqueens.domain.model.Cell
+import com.carlosjimz87.nqueens.presentation.board.event.UiEvent
 import com.carlosjimz87.nqueens.presentation.board.state.UiState
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 
@@ -25,6 +28,12 @@ class BoardViewModel(
     private val _queens = MutableStateFlow<Set<Cell>>(emptySet())
     val queens: StateFlow<Set<Cell>> = _queens
 
+    private val _events = MutableSharedFlow<UiEvent>(
+        replay = 0,
+        extraBufferCapacity = 1
+    )
+    val events: SharedFlow<UiEvent> = _events
+
     init {
         applySize(initialSize)
     }
@@ -33,12 +42,18 @@ class BoardViewModel(
         applySize(newSize)
     }
 
+
     fun onCellClicked(cell: Cell) {
         val current = _queens.value
-        _queens.value = if (cell in current) {
-            current - cell  // remove queen
+        if (cell in current) {
+            // remove queen
+            _queens.value = current - cell
         } else {
-            current + cell  // add queen
+            // add queen and emit sound event
+            _queens.value = current + cell
+            viewModelScope.launch {
+                _events.emit(UiEvent.QueenPlaced)
+            }
         }
     }
 
@@ -46,7 +61,7 @@ class BoardViewModel(
         if (_boardSize.value == size) return
 
         viewModelScope.launch {
-            _uiState.emit(UiState.Loading)
+            _uiState.value = UiState.Loading
 
             delay(150)
             when (val validation = validateNQueensBoardSize(size)) {
@@ -56,11 +71,9 @@ class BoardViewModel(
                     _queens.value = emptySet()
                 }
                 else -> {
-                    _uiState.emit(
-                        UiState.BoardInvalid(
-                            message = "Invalid size: $size",
-                            error = validation
-                        )
+                    _uiState.value = UiState.BoardInvalid(
+                        message = "Invalid size: $size",
+                        error = validation
                     )
                 }
             }
