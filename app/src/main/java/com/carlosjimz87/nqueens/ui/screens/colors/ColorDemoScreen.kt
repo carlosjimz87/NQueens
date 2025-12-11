@@ -1,4 +1,4 @@
-package com.carlosjimz87.nqueens.ui.screens.board
+package com.carlosjimz87.nqueens.ui.screens.colors
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -15,7 +15,10 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.carlosjimz87.nqueens.ui.theme.NQueensTheme
 
 @Composable
 fun ColorDemoScreen(
@@ -48,8 +51,8 @@ fun ColorDemoScreen(
 @Composable
 private fun ColorRow(
     label: String,
-    color: androidx.compose.ui.graphics.Color,
-    onColor: androidx.compose.ui.graphics.Color,
+    color: Color,
+    onColor: Color,
 ) {
     Card(
         modifier = Modifier
@@ -68,5 +71,38 @@ private fun ColorRow(
                 modifier = Modifier.padding(horizontal = 16.dp)
             )
         }
+    }
+}
+
+
+@Preview(showBackground = true, name = "Light Theme")
+@Composable
+fun ColorDemoLightPreview() {
+    NQueensTheme(darkTheme = false, dynamicColor = false) {
+        ColorDemoScreen()
+    }
+}
+
+@Preview(showBackground = true, name = "Dark Theme")
+@Composable
+fun ColorDemoDarkPreview() {
+    NQueensTheme(darkTheme = true, dynamicColor = false) {
+        ColorDemoScreen()
+    }
+}
+
+@Preview(showBackground = true, name = "Light Theme - Dynamic")
+@Composable
+fun ColorDemoLightDynamicPreview() {
+    NQueensTheme(darkTheme = false, dynamicColor = true) {
+        ColorDemoScreen()
+    }
+}
+
+@Preview(showBackground = true, name = "Dark Theme - Dynamic")
+@Composable
+fun ColorDemoDarkDynamicPreview() {
+    NQueensTheme(darkTheme = true, dynamicColor = true) {
+        ColorDemoScreen()
     }
 }
