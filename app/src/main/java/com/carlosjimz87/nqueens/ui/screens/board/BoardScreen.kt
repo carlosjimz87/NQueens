@@ -21,10 +21,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.carlosjimz87.nqueens.common.validateNQueensBoardSize
-import com.carlosjimz87.nqueens.domain.error.BoardError
 import com.carlosjimz87.nqueens.presentation.board.viewmodel.BoardViewModel
 import com.carlosjimz87.nqueens.ui.composables.board.Board
+import com.carlosjimz87.nqueens.ui.composables.board.InvalidBoard
 
 @Composable
 fun BoardScreen(
@@ -33,11 +32,10 @@ fun BoardScreen(
 ) {
     val cs = MaterialTheme.colorScheme
     val typography = MaterialTheme.typography
-    val lastValidSize by viewModel.lastValidSize.collectAsState()
+    val boardSize by viewModel.boardSize.collectAsState()
 
     val snackbarHostState = remember { SnackbarHostState() }
 
-    // Collect error events from the VM and show a snackbar
     LaunchedEffect(Unit) {
         viewModel.errors.collect { uiError ->
             snackbarHostState.showSnackbar(uiError.message)
@@ -55,13 +53,11 @@ fun BoardScreen(
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
-            // Header: current size
             Text(
-                text = "Current N = $lastValidSize",
-                style = MaterialTheme.typography.titleMedium
+                text = "Current N = ${boardSize ?: "-"}",
+                style = typography.titleMedium
             )
 
-            // Simple controls to test valid/invalid sizes
             Column(
                 horizontalAlignment = Alignment.Start,
                 verticalArrangement = Arrangement.Center
@@ -80,34 +76,23 @@ fun BoardScreen(
                 }
             }
 
-            // Board / snapshot area
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
                     .weight(1f),
                 contentAlignment = Alignment.Center
             ) {
-                val sizeToRender = lastValidSize
-
-                if (validateNQueensBoardSize(sizeToRender) == BoardError.NoError) {
+                boardSize?.let {
                     Board(
-                        size = sizeToRender,
+                        size = it,
                         modifier = Modifier.fillMaxSize()
                     )
-                } else {
-                    Box(
-                        modifier = modifier
-                            .fillMaxWidth()
-                            .padding(16.dp),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(
-                            text = "Board not available.\n Try another size",
-                            style = typography.titleMedium,
-                            color = cs.onSurface,
-                        )
-                    }
-                }
+                } ?: InvalidBoard(
+                    modifier = Modifier.fillMaxWidth(),
+                    typography = typography,
+                    cs = cs
+                )
+
             }
         }
     }

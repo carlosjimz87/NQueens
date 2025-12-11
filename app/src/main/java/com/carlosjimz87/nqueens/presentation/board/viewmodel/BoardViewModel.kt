@@ -12,29 +12,36 @@ import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 
-class BoardViewModel : ViewModel() {
+class BoardViewModel(
+    private val initialSize: Int = Constants.DEFAULT_COLUMNS_ROWS
+) : ViewModel() {
 
-    private val _currentSize = MutableStateFlow(Constants.DEFAULT_COLUMNS_ROWS)
-    val currentSize: StateFlow<Int> = _currentSize
-
-    private val _lastValidSize = MutableStateFlow(_currentSize.value)
-    val lastValidSize: StateFlow<Int> = _lastValidSize
+    private val _boardSize = MutableStateFlow<Int?>(null)
+    val boardSize: StateFlow<Int?> = _boardSize
 
     private val _errors = MutableSharedFlow<UiState.BoardInvalid>()
     val errors: SharedFlow<UiState.BoardInvalid> = _errors
 
-    fun onSizeChanged(newSize: Int) {
-        _currentSize.value = newSize
+    init {
+        applySize(initialSize)
+    }
 
-        when (val validation = validateNQueensBoardSize(newSize)) {
+    fun onSizeChanged(newSize: Int) {
+        applySize(newSize)
+    }
+
+    private fun applySize(size: Int) {
+        when (val validation = validateNQueensBoardSize(size)) {
             BoardError.NoError -> {
-                _lastValidSize.value = newSize
+                _boardSize.value = size
             }
+
             else -> {
+                _boardSize.value = null
                 viewModelScope.launch {
                     _errors.emit(
                         UiState.BoardInvalid(
-                            message = "Invalid size: $newSize",
+                            message = "Invalid size: $size",
                             error = validation
                         )
                     )
