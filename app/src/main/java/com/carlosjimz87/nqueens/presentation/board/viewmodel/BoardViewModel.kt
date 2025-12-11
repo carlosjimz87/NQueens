@@ -66,7 +66,7 @@ class BoardViewModel(
             delay(150)
             when (val validation = validateNQueensBoardSize(size)) {
                 BoardError.NoError -> {
-                    _boardSize.value = size
+                     _boardSize.value = size
                     _uiState.value = UiState.Idle
                     _queens.value = emptySet()
                 }

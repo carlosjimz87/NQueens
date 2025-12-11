@@ -3,8 +3,10 @@ package com.carlosjimz87.nqueens.presentation.board.viewmodel
 import com.carlosjimz87.nqueens.MainDispatcherRule
 import com.carlosjimz87.nqueens.domain.error.BoardError
 import com.carlosjimz87.nqueens.domain.model.Cell
+import com.carlosjimz87.nqueens.presentation.board.event.UiEvent
 import com.carlosjimz87.nqueens.presentation.board.state.UiState
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.launch
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Rule
@@ -132,5 +134,56 @@ class BoardViewModelTest {
         vm.onCellClicked(cell)  // remove
 
         assertTrue(vm.queens.value.isEmpty())
+    }
+
+    @Test
+    fun `onCellClicked on empty cell adds queen and emits QueenPlaced`() = runTest {
+        val vm = BoardViewModel(initialSize = 8)
+        advanceUntilIdle()
+
+        val cell = Cell(row = 0, col = 0)
+
+        val events = mutableListOf<UiEvent>()
+        val job = launch {
+            vm.events.collect { event ->
+                events.add(event)
+            }
+        }
+
+        vm.onCellClicked(cell)
+
+        advanceUntilIdle()
+
+        assertTrue(cell in vm.queens.value)
+        assertTrue(events.any { it is UiEvent.QueenPlaced })
+
+        job.cancel()
+    }
+
+    @Test
+    fun `onCellClicked on occupied cell removes queen and does not emit new QueenPlaced`() = runTest {
+        val vm = BoardViewModel(initialSize = 8)
+        advanceUntilIdle()
+
+        val cell = Cell(row = 0, col = 0)
+
+        val events = mutableListOf<UiEvent>()
+        val job = launch {
+            vm.events.collect { event ->
+                events.add(event)
+            }
+        }
+
+        vm.onCellClicked(cell)
+        advanceUntilIdle()
+        events.clear()
+
+        vm.onCellClicked(cell)
+        advanceUntilIdle()
+
+        assertTrue(vm.queens.value.isEmpty())
+        assertTrue(events.none { it is UiEvent.QueenPlaced })
+
+        job.cancel()
     }
 }
