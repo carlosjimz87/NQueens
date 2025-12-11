@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.carlosjimz87.nqueens.common.Constants
 import com.carlosjimz87.nqueens.common.validateNQueensBoardSize
 import com.carlosjimz87.nqueens.domain.error.BoardError
+import com.carlosjimz87.nqueens.domain.model.Cell
 import com.carlosjimz87.nqueens.presentation.board.state.UiState
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -21,12 +22,24 @@ class BoardViewModel(
     private val _uiState = MutableStateFlow<UiState>(UiState.Idle)
     val uiState: StateFlow<UiState> = _uiState
 
+    private val _queens = MutableStateFlow<Set<Cell>>(emptySet())
+    val queens: StateFlow<Set<Cell>> = _queens
+
     init {
         applySize(initialSize)
     }
 
     fun onSizeChanged(newSize: Int) {
         applySize(newSize)
+    }
+
+    fun onCellClicked(cell: Cell) {
+        val current = _queens.value
+        _queens.value = if (cell in current) {
+            current - cell  // remove queen
+        } else {
+            current + cell  // add queen
+        }
     }
 
     private fun applySize(size: Int) {

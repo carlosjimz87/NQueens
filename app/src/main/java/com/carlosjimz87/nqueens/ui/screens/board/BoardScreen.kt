@@ -38,6 +38,8 @@ fun BoardScreen(
     val typography = MaterialTheme.typography
     val boardSize by viewModel.boardSize.collectAsState()
     val uiState by viewModel.uiState.collectAsState()
+    val queens by viewModel.queens.collectAsState()
+
     var isLoading by remember { mutableStateOf(false) }
     val snackbarHostState = remember { SnackbarHostState() }
 
@@ -79,18 +81,10 @@ fun BoardScreen(
                 horizontalAlignment = Alignment.Start,
                 verticalArrangement = Arrangement.Center
             ) {
-                Button(onClick = { viewModel.onSizeChanged(8) }) {
-                    Text("N = 8 (valid)")
-                }
-                Button(onClick = { viewModel.onSizeChanged(6) }) {
-                    Text("N = 6 (valid)")
-                }
-                Button(onClick = { viewModel.onSizeChanged(2) }) {
-                    Text("N = 2 (invalid)")
-                }
-                Button(onClick = { viewModel.onSizeChanged(22) }) {
-                    Text("N = 22 (invalid)")
-                }
+                Button(onClick = { viewModel.onSizeChanged(8) }) { Text("N = 8 (valid)") }
+                Button(onClick = { viewModel.onSizeChanged(6) }) { Text("N = 6 (valid)") }
+                Button(onClick = { viewModel.onSizeChanged(2) }) { Text("N = 2 (invalid)") }
+                Button(onClick = { viewModel.onSizeChanged(22) }) { Text("N = 22 (invalid)") }
             }
 
             Box(
@@ -105,6 +99,8 @@ fun BoardScreen(
                     boardSize != null -> {
                         Board(
                             size = boardSize!!,
+                            queens = queens,
+                            onCellClick = viewModel::onCellClicked,
                             modifier = Modifier.fillMaxSize()
                         )
                     }
