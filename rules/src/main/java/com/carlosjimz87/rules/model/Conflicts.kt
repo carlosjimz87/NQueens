@@ -11,4 +11,6 @@ data class Conflicts(
     val hasConflicts: Boolean get() = pairs.isNotEmpty()
     val conflictLinesCount: Int get() = pairs.size
     val conflictCells: Set<Cell> get() = conflictsByCell.keys
+
+    fun conflictsFor(cell: Cell): Set<Cell> = conflictsByCell[cell] ?: emptySet()
 }
