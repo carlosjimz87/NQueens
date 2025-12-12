@@ -1,9 +1,18 @@
 package com.carlosjimz87.rules
 
 import com.carlosjimz87.rules.model.Cell
-import org.junit.Assert.*
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
+import org.junit.Assert.assertTrue
 import org.junit.Test
 
+/**
+ * Unit tests for [QueenConflictsCheckerImpl]
+ *  NOTE: this class should be in the same package as the class under test
+ *  but for simplicity its placed here).
+ *
+ * This class verifies the correctness of conflict detection logic for several scenarios.
+ */
 class QueenConflictsCheckerTest {
 
     private val checker = QueenConflictsCheckerImpl()
@@ -16,7 +25,7 @@ class QueenConflictsCheckerTest {
             Cell(2, 0),
             Cell(3, 2)
         )
-        val report = checker.conflicts(size = 4, queens = queens)
+        val report = checker.check(size = 4, queens = queens)
         assertFalse(report.hasConflicts)
         assertTrue(report.conflictsByCell.isEmpty())
     }
@@ -26,7 +35,7 @@ class QueenConflictsCheckerTest {
         val a = Cell(0, 0)
         val b = Cell(0, 3)
 
-        val report = checker.conflicts(4, setOf(a, b))
+        val report = checker.check(4, setOf(a, b))
         assertTrue(report.hasConflicts)
         assertTrue(a in report.conflictCells)
         assertTrue(b in report.conflictCells)
@@ -39,7 +48,7 @@ class QueenConflictsCheckerTest {
         val a = Cell(0, 0)
         val b = Cell(2, 2)
 
-        val report = checker.conflicts(4, setOf(a, b))
+        val report = checker.check(4, setOf(a, b))
         assertTrue(report.hasConflicts)
         assertEquals(setOf(b), report.conflictsFor(a))
     }
@@ -49,7 +58,7 @@ class QueenConflictsCheckerTest {
         val a = Cell(0, 3)
         val b = Cell(1, 2)
 
-        val report = checker.conflicts(4, setOf(a, b))
+        val report = checker.check(4, setOf(a, b))
         assertTrue(report.hasConflicts)
         assertEquals(setOf(b), report.conflictsFor(a))
     }

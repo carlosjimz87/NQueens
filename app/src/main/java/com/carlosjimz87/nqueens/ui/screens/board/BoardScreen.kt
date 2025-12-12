@@ -19,6 +19,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -32,6 +33,7 @@ import com.carlosjimz87.nqueens.presentation.board.viewmodel.BoardViewModel
 import com.carlosjimz87.nqueens.ui.composables.board.Board
 import com.carlosjimz87.nqueens.ui.composables.board.InvalidBoard
 import com.carlosjimz87.nqueens.ui.composables.game.GameStatusBar
+import kotlinx.coroutines.launch
 import org.koin.androidx.compose.koinViewModel
 
 @Composable
@@ -46,6 +48,7 @@ fun BoardScreen(
     val boardSize by viewModel.boardSize.collectAsState()
     val uiState by viewModel.uiState.collectAsState()
     val queens by viewModel.queens.collectAsState()
+    val conflicts by viewModel.conflicts.collectAsState()
     val gameStatus by viewModel.gameStatus.collectAsState()
     val elapsedMillis by viewModel.elapsedMillis.collectAsState()
 
@@ -54,35 +57,38 @@ fun BoardScreen(
     val soundPlayer = remember { AndroidSoundEffectPlayer(context) }
     val isLoading = uiState is UiState.Loading
 
-    LaunchedEffect(uiState) {
-        if (uiState is UiState.BoardInvalid) {
-            val invalid = uiState as UiState.BoardInvalid
-            snackbarHostState.showSnackbar(invalid.message)
-        }
-    }
+    var prevSolved by rememberSaveable { mutableStateOf(false) }
+    val isSolved = gameStatus is GameStatus.Solved
 
     LaunchedEffect(Unit) {
-        viewModel.events.collect { event ->
-            when (event) {
-                is UiEvent.QueenPlaced -> soundPlayer.playQueenPlaced()
-                is UiEvent.QueenRemoved -> soundPlayer.playQueenRemoved()
-                is UiEvent.BoardReset -> soundPlayer.playStart()
+        launch {
+            viewModel.uiState.collect { state ->
+                if (state is UiState.InvalidBoard) {
+                    snackbarHostState.showSnackbar(state.message)
+                }
+            }
+        }
+
+        launch {
+            viewModel.events.collect { event ->
+                when (event) {
+                    is UiEvent.QueenPlaced -> soundPlayer.playQueenPlaced()
+                    is UiEvent.QueenRemoved -> soundPlayer.playQueenRemoved()
+                    is UiEvent.BoardReset -> {
+                        soundPlayer.playStart()
+                        prevSolved = false
+                    }
+                    is UiEvent.ConflictDetected -> soundPlayer.playConflict()
+                }
             }
         }
     }
 
-    val isSolved = gameStatus is GameStatus.Solved
-    var wasSolved by remember { mutableStateOf(false) }
-
     LaunchedEffect(isSolved) {
-        if (isSolved && !wasSolved) {
+        if (isSolved && !prevSolved) {
             soundPlayer.playSolved()
         }
-        wasSolved = isSolved
-    }
-
-    LaunchedEffect(boardSize) {
-        wasSolved = false
+        prevSolved = isSolved
     }
 
     Scaffold(
@@ -130,6 +136,7 @@ fun BoardScreen(
                         Board(
                             size = boardSize!!,
                             queens = queens,
+                            conflicts = conflicts,
                             onCellClick = viewModel::onCellClicked,
                             modifier = Modifier.fillMaxSize()
                         )

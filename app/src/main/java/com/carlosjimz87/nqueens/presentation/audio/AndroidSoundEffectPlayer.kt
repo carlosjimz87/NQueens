@@ -5,6 +5,11 @@ import android.media.MediaPlayer
 import androidx.annotation.RawRes
 import com.carlosjimz87.nqueens.R
 
+/**
+ * An implementation of [SoundEffectPlayer] that uses Android's [MediaPlayer]
+ * to play sound effects from raw resources. This encapsulates the sound playing logic
+ * and provides methods to play specific sound effects for game events.
+ */
 class AndroidSoundEffectPlayer(
     private val context: Context
 ) : SoundEffectPlayer {
@@ -19,6 +24,10 @@ class AndroidSoundEffectPlayer(
 
     override fun playStart() {
         playRaw(R.raw.start)
+    }
+
+    override fun playConflict() {
+        playRaw(R.raw.conflict)
     }
 
     override fun playSolved() {

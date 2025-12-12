@@ -5,4 +5,5 @@ interface SoundEffectPlayer {
     fun playQueenRemoved()
     fun playSolved()
     fun playStart()
+    fun playConflict()
 }
