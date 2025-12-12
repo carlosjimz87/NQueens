@@ -91,6 +91,9 @@ class BoardViewModel(
                     timer.reset()
                     _uiState.value = UiState.Idle
                     _gameStatus.value = GameStatus.NotStarted(size)
+                    _events.emit(
+                        UiEvent.BoardReset
+                    )
                 }
                 else -> {
                     _uiState.value = UiState.BoardInvalid(

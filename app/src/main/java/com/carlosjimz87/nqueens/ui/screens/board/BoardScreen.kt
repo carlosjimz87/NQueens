@@ -17,11 +17,14 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import com.carlosjimz87.nqueens.domain.model.GameStatus
 import com.carlosjimz87.nqueens.presentation.audio.AndroidSoundEffectPlayer
 import com.carlosjimz87.nqueens.presentation.board.event.UiEvent
 import com.carlosjimz87.nqueens.presentation.board.state.UiState
@@ -61,16 +64,25 @@ fun BoardScreen(
     LaunchedEffect(Unit) {
         viewModel.events.collect { event ->
             when (event) {
-                is UiEvent.QueenPlaced -> {
-                    soundPlayer.playQueenPlaced()
-                    //fx.triggerGlow(event.cell)
-                }
-
-                is UiEvent.QueenRemoved -> {
-                    soundPlayer.playQueenRemoved()
-                }
+                is UiEvent.QueenPlaced -> soundPlayer.playQueenPlaced()
+                is UiEvent.QueenRemoved -> soundPlayer.playQueenRemoved()
+                is UiEvent.BoardReset -> soundPlayer.playStart()
             }
         }
+    }
+
+    val isSolved = gameStatus is GameStatus.Solved
+    var wasSolved by remember { mutableStateOf(false) }
+
+    LaunchedEffect(isSolved) {
+        if (isSolved && !wasSolved) {
+            soundPlayer.playSolved()
+        }
+        wasSolved = isSolved
+    }
+
+    LaunchedEffect(boardSize) {
+        wasSolved = false
     }
 
     Scaffold(
