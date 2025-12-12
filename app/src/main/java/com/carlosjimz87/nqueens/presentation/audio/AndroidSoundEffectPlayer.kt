@@ -13,6 +13,10 @@ class AndroidSoundEffectPlayer(
         playRaw(R.raw.place)
     }
 
+    override fun playQueenRemoved() {
+        playRaw(R.raw.erase)
+    }
+
     private fun playRaw(@RawRes resId: Int) {
         val mediaPlayer = MediaPlayer.create(context, resId) ?: return
 

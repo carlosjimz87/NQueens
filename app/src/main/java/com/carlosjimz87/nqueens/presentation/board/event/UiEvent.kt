@@ -1,5 +1,8 @@
 package com.carlosjimz87.nqueens.presentation.board.event
 
-sealed class UiEvent {
-    data object QueenPlaced : UiEvent()
+import com.carlosjimz87.nqueens.domain.model.Cell
+
+sealed interface UiEvent {
+    data class QueenPlaced(val cell: Cell) : UiEvent
+    data class QueenRemoved(val cell: Cell) : UiEvent
 }

@@ -53,23 +53,24 @@ class BoardViewModel(
 
     fun onCellClicked(cell: Cell) {
         val current = _queens.value
+        val isPlacing = cell !in current
 
-        if (current.isEmpty()) {
+        if (current.isEmpty() && isPlacing) {
             timer.start()
         }
 
         movesCount++
 
-        _queens.value = if (cell in current) {
-            current - cell
-        } else {
+        _queens.value = if (isPlacing) {
             current + cell
+        } else {
+            current - cell
         }
 
         viewModelScope.launch {
-            if (cell !in current) {
-                _events.emit(UiEvent.QueenPlaced)
-            }
+            _events.emit(
+                if (isPlacing) UiEvent.QueenPlaced(cell) else UiEvent.QueenRemoved(cell)
+            )
         }
 
         updateGameStatus()

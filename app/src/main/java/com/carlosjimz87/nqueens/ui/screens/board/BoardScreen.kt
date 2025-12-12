@@ -49,7 +49,6 @@ fun BoardScreen(
     val snackbarHostState = remember { SnackbarHostState() }
     val context = LocalContext.current
     val soundPlayer = remember { AndroidSoundEffectPlayer(context) }
-
     val isLoading = uiState is UiState.Loading
 
     LaunchedEffect(uiState) {
@@ -62,7 +61,14 @@ fun BoardScreen(
     LaunchedEffect(Unit) {
         viewModel.events.collect { event ->
             when (event) {
-                UiEvent.QueenPlaced -> soundPlayer.playQueenPlaced()
+                is UiEvent.QueenPlaced -> {
+                    soundPlayer.playQueenPlaced()
+                    //fx.triggerGlow(event.cell)
+                }
+
+                is UiEvent.QueenRemoved -> {
+                    soundPlayer.playQueenRemoved()
+                }
             }
         }
     }

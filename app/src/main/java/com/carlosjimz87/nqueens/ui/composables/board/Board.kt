@@ -32,7 +32,7 @@ fun Board(
                                 .fillMaxSize()
                                 .clickable { onCellClick(cell) },
                             isDarkSquare = isDark,
-                            hasQueen = hasQueen
+                            hasQueen = hasQueen,
                         )
                     }
                 }
