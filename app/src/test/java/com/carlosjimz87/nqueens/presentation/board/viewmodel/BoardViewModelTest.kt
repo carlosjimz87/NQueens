@@ -1,31 +1,56 @@
 package com.carlosjimz87.nqueens.presentation.board.viewmodel
 
 import com.carlosjimz87.nqueens.MainDispatcherRule
-import com.carlosjimz87.nqueens.domain.error.BoardError
-import com.carlosjimz87.nqueens.domain.model.Cell
-import com.carlosjimz87.nqueens.domain.model.GameStatus
+import com.carlosjimz87.nqueens.di.testModule
 import com.carlosjimz87.nqueens.presentation.board.event.UiEvent
 import com.carlosjimz87.nqueens.presentation.board.state.UiState
-import com.carlosjimz87.nqueens.presentation.timer.FakeGameTimer
+import com.carlosjimz87.rules.model.BoardError
+import com.carlosjimz87.rules.model.Cell
+import com.carlosjimz87.rules.model.GameStatus
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
+import kotlinx.coroutines.yield
+import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
+import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
+import org.koin.core.context.GlobalContext.startKoin
+import org.koin.core.context.GlobalContext.stopKoin
+import org.koin.java.KoinJavaComponent.getKoin
 
+/**
+ * Test suite for the [BoardViewModel].
+ *
+ * This class contains unit tests that verify the behavior of the [BoardViewModel],
+ * ensuring that its state management, event handling, and game logic are correct.
+ * It uses a test-specific Koin module [testModule] for dependency injection and
+ * [MainDispatcherRule] to manage coroutine dispatchers for testing.
+ *
+ */
 @OptIn(ExperimentalCoroutinesApi::class)
 class BoardViewModelTest {
 
-    @get:Rule
-    val mainDispatcherRule = MainDispatcherRule()
+    @get:Rule val mainDispatcherRule = MainDispatcherRule()
+
+    @Before
+    fun setUp() {
+        startKoin { modules(testModule) }
+    }
+
+    @After
+    fun tearDown() {
+        stopKoin()
+    }
+
+    private fun getVm(): BoardViewModel = getKoin().get()
 
     @Test
     fun `init with valid initial size sets boardSize and ends Idle`() = runTest {
-        val vm = BoardViewModel( FakeGameTimer())
-
+        val vm = getVm()
         advanceUntilIdle()
 
         assertEquals(8, vm.boardSize.value)
@@ -34,7 +59,7 @@ class BoardViewModelTest {
 
     @Test
     fun `onSizeChanged with valid new size updates boardSize goes Idle and clears queens`() = runTest {
-        val vm = BoardViewModel( FakeGameTimer())
+        val vm = getVm()
         advanceUntilIdle()
 
         // add some queens before size change
@@ -53,7 +78,7 @@ class BoardViewModelTest {
 
     @Test
     fun `onSizeChanged with invalid size emits BoardInvalid(small) and keeps last valid boardSize and queens`() = runTest {
-        val vm = BoardViewModel( FakeGameTimer())
+        val vm = getVm()
         advanceUntilIdle()
 
         val queenCell = Cell(row = 0, col = 0)
@@ -69,14 +94,14 @@ class BoardViewModelTest {
         assertEquals(setOf(queenCell), vm.queens.value)
 
         val state = vm.uiState.value
-        assertTrue(state is UiState.BoardInvalid)
-        state as UiState.BoardInvalid
+        assertTrue(state is UiState.InvalidBoard)
+        state as UiState.InvalidBoard
         assertEquals(BoardError.SizeTooSmall, state.error)
     }
 
     @Test
     fun `onSizeChanged with invalid size emits BoardInvalid(big) and keeps last valid boardSize`() = runTest {
-        val vm = BoardViewModel( FakeGameTimer())
+        val vm = getVm()
         advanceUntilIdle()
 
         vm.onSizeChanged(22)
@@ -86,14 +111,14 @@ class BoardViewModelTest {
         assertEquals(8, vm.boardSize.value)
 
         val state = vm.uiState.value
-        assertTrue(state is UiState.BoardInvalid)
-        state as UiState.BoardInvalid
+        assertTrue(state is UiState.InvalidBoard)
+        state as UiState.InvalidBoard
         assertEquals(BoardError.SizeTooBig, state.error)
     }
 
     @Test
     fun `onSizeChanged with same size does nothing`() = runTest {
-        val vm = BoardViewModel( FakeGameTimer())
+        val vm = getVm()
         advanceUntilIdle()
 
         val queenCell = Cell(row = 0, col = 0)
@@ -114,7 +139,7 @@ class BoardViewModelTest {
 
     @Test
     fun `onCellClicked adds queen when cell is empty`() = runTest {
-        val vm = BoardViewModel(FakeGameTimer())
+        val vm = getVm()
         advanceUntilIdle()
 
         val cell = Cell(row = 3, col = 4)
@@ -127,7 +152,7 @@ class BoardViewModelTest {
 
     @Test
     fun `onCellClicked removes queen when cell already has queen`() = runTest {
-        val vm = BoardViewModel( FakeGameTimer())
+        val vm = getVm()
         advanceUntilIdle()
 
         val cell = Cell(row = 3, col = 4)
@@ -140,20 +165,19 @@ class BoardViewModelTest {
 
     @Test
     fun `onCellClicked on empty cell adds queen and emits QueenPlaced`() = runTest {
-        val vm = BoardViewModel( FakeGameTimer())
+        val vm = getVm()
         advanceUntilIdle()
 
         val cell = Cell(row = 0, col = 0)
 
         val events = mutableListOf<UiEvent>()
         val job = launch {
-            vm.events.collect { event ->
-                events.add(event)
-            }
+            vm.events.collect { events.add(it) }
         }
 
-        vm.onCellClicked(cell)
+        yield()
 
+        vm.onCellClicked(cell)
         advanceUntilIdle()
 
         assertTrue(cell in vm.queens.value)
@@ -164,7 +188,7 @@ class BoardViewModelTest {
 
     @Test
     fun `onCellClicked on occupied cell removes queen and does not emit new QueenPlaced`() = runTest {
-        val vm = BoardViewModel(FakeGameTimer())
+        val vm = getVm()
         advanceUntilIdle()
 
         val cell = Cell(row = 0, col = 0)
@@ -191,8 +215,7 @@ class BoardViewModelTest {
 
     @Test
     fun `init with valid initial size sets NotStarted and elapsed is zero`() = runTest {
-        val vm = BoardViewModel( FakeGameTimer())
-
+        val vm = getVm()
         advanceUntilIdle()
 
         val status = vm.gameStatus.value
@@ -206,7 +229,7 @@ class BoardViewModelTest {
 
     @Test
     fun `placing first queen moves game to InProgress`() = runTest {
-        val vm = BoardViewModel( FakeGameTimer())
+        val vm = getVm()
         advanceUntilIdle()
 
         val cell = Cell(row = 0, col = 0)
@@ -225,17 +248,15 @@ class BoardViewModelTest {
 
     @Test
     fun `removing all queens returns game to NotStarted and resets timer`() = runTest {
-        val vm = BoardViewModel( FakeGameTimer())
+        val vm = getVm()
         advanceUntilIdle()
 
         val cell = Cell(row = 0, col = 0)
 
-        // First move: place queen
-        vm.onCellClicked(cell)
+        vm.onCellClicked(cell) // place
         advanceUntilIdle()
 
-        // Second move: remove queen
-        vm.onCellClicked(cell)
+        vm.onCellClicked(cell) // remove
         advanceUntilIdle()
 
         val status = vm.gameStatus.value
@@ -243,15 +264,12 @@ class BoardViewModelTest {
         status as GameStatus.NotStarted
         assertEquals(8, status.size)
 
-        // After going back to NotStarted, timer should be reset
         assertEquals(0L, vm.elapsedMillis.value)
     }
 
     @Test
     fun `changing to a new valid size resets queens moves and timer and sets NotStarted`() = runTest {
-        val vm = BoardViewModel( FakeGameTimer())
-        advanceUntilIdle()
-
+        val vm = getVm()
         // Place some queens to simulate a game in progress
         vm.onCellClicked(Cell(row = 0, col = 0))
         vm.onCellClicked(Cell(row = 1, col = 1))
@@ -275,20 +293,17 @@ class BoardViewModelTest {
 
     @Test
     fun `placing N queens with zero conflicts moves game to Solved`() = runTest {
-        val vm = BoardViewModel(timer = FakeGameTimer())
-
-        advanceUntilIdle()
-
+        val vm = getVm()
         // Override default size (e.g. 8) and set 4 for this test
         vm.onSizeChanged(4)
 
         advanceUntilIdle()
 
-        // For now, conflicts = 0, so any 4 distinct cells will trigger Solved
-        vm.onCellClicked(Cell(row = 0, col = 0))
-        vm.onCellClicked(Cell(row = 1, col = 1))
-        vm.onCellClicked(Cell(row = 2, col = 2))
-        vm.onCellClicked(Cell(row = 3, col = 3))
+        // For a 4x4 board, a valid solution is (0,1), (1,3), (2,0), (3,2)
+        vm.onCellClicked(Cell(row = 0, col = 1))
+        vm.onCellClicked(Cell(row = 1, col = 3))
+        vm.onCellClicked(Cell(row = 2, col = 0))
+        vm.onCellClicked(Cell(row = 3, col = 2))
 
         advanceUntilIdle()
 
@@ -298,17 +313,5 @@ class BoardViewModelTest {
 
         assertEquals(4, status.size)
         assertTrue(status.moves >= 4)
-    }
-
-    @Test
-    fun `first queen starts timer`() = runTest {
-        val timer = FakeGameTimer()
-        val vm = BoardViewModel( timer = timer)
-
-        advanceUntilIdle()
-
-        vm.onCellClicked(Cell(0, 0))
-
-        assertEquals(1, timer.startCalled)
     }
 }

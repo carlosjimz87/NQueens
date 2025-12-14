@@ -1,4 +1,4 @@
-package com.carlosjimz87.nqueens.domain.model
+package com.carlosjimz87.rules.model
 
 sealed interface GameStatus {
 

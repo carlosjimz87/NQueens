@@ -1,9 +1,9 @@
 package com.carlosjimz87.nqueens.presentation.board.state
 
-import com.carlosjimz87.nqueens.domain.error.BoardError
+import com.carlosjimz87.rules.model.BoardError
 
 sealed class UiState {
     data object Idle : UiState()
     data object Loading : UiState()
-    data class BoardInvalid(val message: String, val error: BoardError) : UiState()
+    data class InvalidBoard(val message: String, val error: BoardError) : UiState()
 }

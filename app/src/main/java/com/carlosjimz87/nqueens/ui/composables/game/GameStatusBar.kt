@@ -16,7 +16,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.carlosjimz87.nqueens.common.formatElapsed
-import com.carlosjimz87.nqueens.domain.model.GameStatus
+import com.carlosjimz87.rules.model.GameStatus
 
 @Composable
 fun GameStatusBar(
