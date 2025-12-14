@@ -78,10 +78,10 @@ class BoardViewModel(
                 .let { result ->
                     when (result) {
                         is Result.Ok -> {
+                            timer.reset()
                             updateState(result.value)
                             _uiState.value = UiState.Idle
                             emit(UiEvent.BoardReset)
-                            timer.reset()
                         }
 
                         is Result.Err -> {
@@ -102,24 +102,15 @@ class BoardViewModel(
         val currentQueens = _queens.value
         val isPlacing = cell !in currentQueens
 
-        if (isPlacing && currentQueens.isEmpty()) {
-            timer.start()
-        }
+        if (isPlacing && currentQueens.isEmpty()) timer.start()
 
-        val gameState = if (isPlacing) {
-            solver.placeQueen(cell)
-        } else {
-            solver.removeQueen(cell)
-        }
+        val state = if (isPlacing) solver.placeQueen(cell) else solver.removeQueen(cell)
+        updateState(state)
 
-        updateState(gameState)
-
-        val conflictOnPlacedCell = gameState.conflicts.conflictsFor(cell).isNotEmpty()
+        val conflictOnPlacedCell = isPlacing && state.conflicts.conflictsFor(cell).isNotEmpty()
         emit(moveEvent(isPlacing, cell, conflictOnPlacedCell))
 
-        if (gameState.status is GameStatus.Solved) {
-            timer.stop()
-        }
+        if (state.status is GameStatus.Solved) timer.stop()
     }
 
     private fun updateState(gameState: GameState) {

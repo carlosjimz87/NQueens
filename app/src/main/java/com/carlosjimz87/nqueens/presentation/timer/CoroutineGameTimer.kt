@@ -43,6 +43,7 @@ class CoroutineGameTimer(
     }
 
     override fun reset() {
+        stop()
         _elapsedMillis.value = 0L
     }
 }
