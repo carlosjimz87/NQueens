@@ -6,6 +6,8 @@ import com.carlosjimz87.nqueens.presentation.timer.FakeGameTimer
 import com.carlosjimz87.nqueens.presentation.timer.GameTimer
 import com.carlosjimz87.rules.board.BoardChecker
 import com.carlosjimz87.rules.board.BoardCheckerImpl
+import com.carlosjimz87.rules.game.GameStatusCalculator
+import com.carlosjimz87.rules.game.GameStatusCalculatorImpl
 import com.carlosjimz87.rules.game.QueenConflictsChecker
 import org.koin.androidx.viewmodel.dsl.viewModel
 import org.koin.dsl.module
@@ -16,9 +18,11 @@ val testModule = module {
 
     single<QueenConflictsChecker> { FakeQueenConflictsChecker() }
     single<BoardChecker> { BoardCheckerImpl() }
+    single<GameStatusCalculator> { GameStatusCalculatorImpl() }
 
     viewModel {
         BoardViewModel(
+            get(),
             get(),
             get(),
             get()

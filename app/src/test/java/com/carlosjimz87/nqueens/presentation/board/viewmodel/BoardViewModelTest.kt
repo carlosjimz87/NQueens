@@ -3,7 +3,7 @@ package com.carlosjimz87.nqueens.presentation.board.viewmodel
 import com.carlosjimz87.nqueens.MainDispatcherRule
 import com.carlosjimz87.nqueens.di.testModule
 import com.carlosjimz87.rules.model.BoardError
-import com.carlosjimz87.nqueens.domain.model.GameStatus
+import com.carlosjimz87.rules.model.GameStatus
 import com.carlosjimz87.nqueens.presentation.board.event.UiEvent
 import com.carlosjimz87.nqueens.presentation.board.state.UiState
 import com.carlosjimz87.rules.model.Cell

@@ -3,15 +3,16 @@ package com.carlosjimz87.nqueens.presentation.board.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.carlosjimz87.nqueens.common.Constants
-import com.carlosjimz87.rules.model.BoardError
-import com.carlosjimz87.rules.model.Cell
-import com.carlosjimz87.nqueens.domain.model.GameStatus
 import com.carlosjimz87.nqueens.presentation.board.event.UiEvent
 import com.carlosjimz87.nqueens.presentation.board.state.UiState
 import com.carlosjimz87.nqueens.presentation.timer.GameTimer
 import com.carlosjimz87.rules.board.BoardChecker
+import com.carlosjimz87.rules.game.GameStatusCalculator
 import com.carlosjimz87.rules.game.QueenConflictsChecker
+import com.carlosjimz87.rules.model.BoardError
+import com.carlosjimz87.rules.model.Cell
 import com.carlosjimz87.rules.model.Conflicts
+import com.carlosjimz87.rules.model.GameStatus
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -41,7 +42,8 @@ import kotlinx.coroutines.launch
 class BoardViewModel(
     private val timer: GameTimer,
     private val conflictsChecker: QueenConflictsChecker,
-    private val boardChecker: BoardChecker
+    private val boardChecker: BoardChecker,
+    private val statusCalculator: GameStatusCalculator
 ) : ViewModel() {
 
     private val _conflicts = MutableStateFlow(Conflicts.Empty)
@@ -83,54 +85,50 @@ class BoardViewModel(
         movesCount++
 
         val nextQueens = if (isPlacing) current + cell else current - cell
-        applyQueensSnapshot(
+
+        val conflictStarted = applyQueensSnapshot(
             size = size,
             queens = nextQueens,
             placedCell = if (isPlacing) cell else null
         )
 
-        emit(if (isPlacing) UiEvent.QueenPlaced(cell) else UiEvent.QueenRemoved(cell))
+        val event = when {
+            !isPlacing -> UiEvent.QueenRemoved(cell)
+            conflictStarted -> UiEvent.ConflictDetected
+            else -> UiEvent.QueenPlaced(cell)
+        }
+
+        emit(event)
     }
 
-    private fun applyQueensSnapshot(size: Int, queens: Set<Cell>, placedCell: Cell?) {
+    private fun applyQueensSnapshot(size: Int, queens: Set<Cell>, placedCell: Cell?): Boolean {
         _queens.value = queens
 
         val nextConflicts = conflictsChecker.check(size = size, queens = queens)
         _conflicts.value = nextConflicts
 
-        maybeEmitConflictDetected(placedCell = placedCell, conflicts = nextConflicts)
+        val conflictStarted = didConflictStart(placedCell = placedCell, conflicts = nextConflicts)
 
-        _gameStatus.value = computeStatus(size = size, queens = queens, conflicts = nextConflicts)
+        val status = statusCalculator.compute(
+            size = size,
+            queensCount = queens.size,
+            conflicts = nextConflicts,
+            moves = movesCount
+        )
+
+        if (status is GameStatus.Solved) timer.stop()
+        _gameStatus.value = status
+
+        return conflictStarted
     }
 
-    private fun maybeEmitConflictDetected(placedCell: Cell?, conflicts: Conflicts) {
-        if (placedCell == null) return
+    private fun didConflictStart(placedCell: Cell?, conflicts: Conflicts): Boolean {
+        if (placedCell == null) return false
 
         val newCount = conflicts.conflictCells.size
-        if (newCount > lastConflictCellsCount) {
-            emit(UiEvent.ConflictDetected)
-        }
+        val started = newCount > lastConflictCellsCount
         lastConflictCellsCount = newCount
-    }
-
-    private fun computeStatus(size: Int, queens: Set<Cell>, conflicts: Conflicts): GameStatus {
-        val queensCount = queens.size
-        val conflictsCount = conflicts.conflictLinesCount
-
-        return when {
-            queensCount == 0 -> GameStatus.NotStarted(size)
-
-            queensCount == size && !conflicts.hasConflicts -> {
-                timer.stop()
-                GameStatus.Solved(size = size, moves = movesCount)
-            }
-
-            else -> GameStatus.InProgress(
-                size = size,
-                queensPlaced = queensCount,
-                conflicts = conflictsCount
-            )
-        }
+        return started
     }
 
     private fun applySize(size: Int) {
