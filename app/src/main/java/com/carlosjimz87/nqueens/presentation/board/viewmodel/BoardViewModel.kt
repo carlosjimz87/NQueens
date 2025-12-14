@@ -3,14 +3,14 @@ package com.carlosjimz87.nqueens.presentation.board.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.carlosjimz87.nqueens.common.Constants
-import com.carlosjimz87.nqueens.common.validateNQueensBoardSize
-import com.carlosjimz87.nqueens.domain.error.BoardError
+import com.carlosjimz87.rules.model.BoardError
 import com.carlosjimz87.rules.model.Cell
 import com.carlosjimz87.nqueens.domain.model.GameStatus
 import com.carlosjimz87.nqueens.presentation.board.event.UiEvent
 import com.carlosjimz87.nqueens.presentation.board.state.UiState
 import com.carlosjimz87.nqueens.presentation.timer.GameTimer
-import com.carlosjimz87.rules.QueenConflictsChecker
+import com.carlosjimz87.rules.board.BoardChecker
+import com.carlosjimz87.rules.game.QueenConflictsChecker
 import com.carlosjimz87.rules.model.Conflicts
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -40,7 +40,8 @@ import kotlinx.coroutines.launch
  */
 class BoardViewModel(
     private val timer: GameTimer,
-    private val conflictsChecker: QueenConflictsChecker
+    private val conflictsChecker: QueenConflictsChecker,
+    private val boardChecker: BoardChecker
 ) : ViewModel() {
 
     private val _conflicts = MutableStateFlow(Conflicts.Empty)
@@ -82,7 +83,11 @@ class BoardViewModel(
         movesCount++
 
         val nextQueens = if (isPlacing) current + cell else current - cell
-        applyQueensSnapshot(size = size, queens = nextQueens, placedCell = if (isPlacing) cell else null)
+        applyQueensSnapshot(
+            size = size,
+            queens = nextQueens,
+            placedCell = if (isPlacing) cell else null
+        )
 
         emit(if (isPlacing) UiEvent.QueenPlaced(cell) else UiEvent.QueenRemoved(cell))
     }
@@ -134,12 +139,11 @@ class BoardViewModel(
         viewModelScope.launch {
             _uiState.value = UiState.Loading
             delay(150)
-
-            when (validateNQueensBoardSize(size)) {
+            when (val sizeError = boardChecker.validateSize(size)) {
                 BoardError.NoError -> resetGame(size)
                 else -> _uiState.value = UiState.InvalidBoard(
                     message = "Invalid size: $size",
-                    error = validateNQueensBoardSize(size)
+                    error = sizeError
                 )
             }
         }

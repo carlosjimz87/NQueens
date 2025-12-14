@@ -1,6 +1,6 @@
 package com.carlosjimz87.nqueens.presentation.board.state
 
-import com.carlosjimz87.nqueens.domain.error.BoardError
+import com.carlosjimz87.rules.model.BoardError
 
 sealed class UiState {
     data object Idle : UiState()

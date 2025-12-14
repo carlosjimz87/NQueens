@@ -2,7 +2,7 @@ package com.carlosjimz87.nqueens.presentation.board.viewmodel
 
 import com.carlosjimz87.nqueens.MainDispatcherRule
 import com.carlosjimz87.nqueens.di.testModule
-import com.carlosjimz87.nqueens.domain.error.BoardError
+import com.carlosjimz87.rules.model.BoardError
 import com.carlosjimz87.nqueens.domain.model.GameStatus
 import com.carlosjimz87.nqueens.presentation.board.event.UiEvent
 import com.carlosjimz87.nqueens.presentation.board.state.UiState
@@ -21,7 +21,6 @@ import org.junit.Test
 import org.koin.core.context.GlobalContext.startKoin
 import org.koin.core.context.GlobalContext.stopKoin
 import org.koin.java.KoinJavaComponent.getKoin
-import org.koin.java.KoinJavaComponent.inject
 
 /**
  * Test suite for the [BoardViewModel].

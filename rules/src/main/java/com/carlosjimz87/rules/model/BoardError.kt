@@ -1,4 +1,4 @@
-package com.carlosjimz87.nqueens.domain.error
+package com.carlosjimz87.rules.model
 
 enum class BoardError {
     NoError,

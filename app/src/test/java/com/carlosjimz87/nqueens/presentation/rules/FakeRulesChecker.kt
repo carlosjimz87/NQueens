@@ -1,6 +1,6 @@
 package com.carlosjimz87.nqueens.presentation.rules
 
-import com.carlosjimz87.rules.QueenConflictsChecker
+import com.carlosjimz87.rules.game.QueenConflictsChecker
 import com.carlosjimz87.rules.model.Cell
 import com.carlosjimz87.rules.model.Conflicts
 

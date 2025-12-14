@@ -1,8 +1,9 @@
-package com.carlosjimz87.rules
+package com.carlosjimz87.rules.game
 
 import com.carlosjimz87.rules.model.Cell
 import com.carlosjimz87.rules.model.ConflictPair
 import com.carlosjimz87.rules.model.Conflicts
+
 class QueenConflictsCheckerImpl : QueenConflictsChecker {
 
     override fun check(size: Int, queens: Set<Cell>): Conflicts {

@@ -1,5 +1,6 @@
 package com.carlosjimz87.rules
 
+import com.carlosjimz87.rules.game.QueenConflictsCheckerImpl
 import com.carlosjimz87.rules.model.Cell
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -7,7 +8,7 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 
 /**
- * Unit tests for [QueenConflictsCheckerImpl]
+ * Unit tests for [com.carlosjimz87.rules.game.QueenConflictsCheckerImpl]
  *  NOTE: this class should be in the same package as the class under test
  *  but for simplicity its placed here).
  *
