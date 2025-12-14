@@ -3,6 +3,7 @@ package com.carlosjimz87.nqueens.presentation.board.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.carlosjimz87.nqueens.common.Constants
+import com.carlosjimz87.nqueens.domain.model.SnapshotFlags
 import com.carlosjimz87.nqueens.presentation.board.event.UiEvent
 import com.carlosjimz87.nqueens.presentation.board.state.UiState
 import com.carlosjimz87.nqueens.presentation.timer.GameTimer
@@ -58,13 +59,13 @@ class BoardViewModel(
     private val _queens = MutableStateFlow<Set<Cell>>(emptySet())
     val queens: StateFlow<Set<Cell>> = _queens
 
-    private val _events = MutableSharedFlow<UiEvent>(replay = 0, extraBufferCapacity = 1)
-    val events: SharedFlow<UiEvent> = _events
-
     private val _gameStatus = MutableStateFlow<GameStatus?>(null)
     val gameStatus: StateFlow<GameStatus?> = _gameStatus
 
     val elapsedMillis: StateFlow<Long> = timer.elapsedMillis
+
+    private val _events = MutableSharedFlow<UiEvent>(replay = 0, extraBufferCapacity = 1)
+    val events: SharedFlow<UiEvent> = _events
 
     private var movesCount: Int = 0
     private var lastConflictCellsCount: Int = 0
@@ -77,7 +78,6 @@ class BoardViewModel(
 
     fun onCellClicked(cell: Cell) {
         val size = _boardSize.value ?: return
-
         val current = _queens.value
         val isPlacing = cell !in current
 
@@ -86,28 +86,23 @@ class BoardViewModel(
 
         val nextQueens = if (isPlacing) current + cell else current - cell
 
-        val conflictStarted = applyQueensSnapshot(
+        val (conflictOnPlacedCell) = applySnapshot(
             size = size,
             queens = nextQueens,
             placedCell = if (isPlacing) cell else null
         )
 
-        val event = when {
-            !isPlacing -> UiEvent.QueenRemoved(cell)
-            conflictStarted -> UiEvent.ConflictDetected
-            else -> UiEvent.QueenPlaced(cell)
-        }
-
-        emit(event)
+        emit(moveEvent(isPlacing, cell, conflictOnPlacedCell))
     }
 
-    private fun applyQueensSnapshot(size: Int, queens: Set<Cell>, placedCell: Cell?): Boolean {
+    private fun applySnapshot(size: Int, queens: Set<Cell>, placedCell: Cell?): SnapshotFlags {
         _queens.value = queens
 
         val nextConflicts = conflictsChecker.check(size = size, queens = queens)
         _conflicts.value = nextConflicts
 
-        val conflictStarted = didConflictStart(placedCell = placedCell, conflicts = nextConflicts)
+        val conflictOnPlacedCell =
+            placedCell != null && nextConflicts.conflictsFor(placedCell).isNotEmpty()
 
         val status = statusCalculator.compute(
             size = size,
@@ -119,16 +114,15 @@ class BoardViewModel(
         if (status is GameStatus.Solved) timer.stop()
         _gameStatus.value = status
 
-        return conflictStarted
+        return SnapshotFlags(conflictOnPlacedCell)
     }
 
-    private fun didConflictStart(placedCell: Cell?, conflicts: Conflicts): Boolean {
-        if (placedCell == null) return false
-
-        val newCount = conflicts.conflictCells.size
-        val started = newCount > lastConflictCellsCount
-        lastConflictCellsCount = newCount
-        return started
+    private fun moveEvent(isPlacing: Boolean, cell: Cell, conflictStarted: Boolean): UiEvent {
+        return when {
+            !isPlacing -> UiEvent.QueenRemoved(cell)
+            conflictStarted -> UiEvent.ConflictDetected
+            else -> UiEvent.QueenPlaced(cell)
+        }
     }
 
     private fun applySize(size: Int) {
@@ -137,11 +131,14 @@ class BoardViewModel(
         viewModelScope.launch {
             _uiState.value = UiState.Loading
             delay(150)
-            when (val sizeError = boardChecker.validateSize(size)) {
-                BoardError.NoError -> resetGame(size)
-                else -> _uiState.value = UiState.InvalidBoard(
+
+            val error = boardChecker.validateSize(size)
+            if (error == BoardError.NoError) {
+                resetGame(size)
+            } else {
+                _uiState.value = UiState.InvalidBoard(
                     message = "Invalid size: $size",
-                    error = sizeError
+                    error = error
                 )
             }
         }
@@ -153,7 +150,7 @@ class BoardViewModel(
         lastConflictCellsCount = 0
 
         timer.reset()
-        applyQueensSnapshot(size = size, queens = emptySet(), placedCell = null)
+        applySnapshot(size = size, queens = emptySet(), placedCell = null)
 
         _uiState.value = UiState.Idle
         emit(UiEvent.BoardReset)
