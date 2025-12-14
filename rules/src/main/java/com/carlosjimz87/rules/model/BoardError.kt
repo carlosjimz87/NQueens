@@ -2,6 +2,6 @@ package com.carlosjimz87.rules.model
 
 enum class BoardError {
     NoError,
-    SizeTooSmall,   // n <= 3
-    SizeTooBig      // n >= 21 to prevent performance issues
+    SizeTooSmall,   // n <= [Constants.MIN_BOARD_SIZE]
+    SizeTooBig      // n >= [Constants.MAX_BOARD_SIZE] to prevent performance issues
 }

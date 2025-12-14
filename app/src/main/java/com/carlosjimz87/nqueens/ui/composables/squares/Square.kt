@@ -1,4 +1,4 @@
-package com.carlosjimz87.nqueens.ui.composables.board
+package com.carlosjimz87.nqueens.ui.composables.squares
 
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.FastOutSlowInEasing
@@ -19,6 +19,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
@@ -63,7 +64,7 @@ fun Square(
                     val px = strokeWidth.toPx()
                     drawRect(
                         color = cs.error.copy(alpha = 0.85f),
-                        style = androidx.compose.ui.graphics.drawscope.Stroke(width = px)
+                        style = Stroke(width = px)
                     )
                 }
             },

@@ -5,7 +5,7 @@ import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import com.carlosjimz87.nqueens.ui.composables.conflicts.ConflictLinesOverlay
+import com.carlosjimz87.nqueens.ui.composables.conflicts.ConflictLines
 import com.carlosjimz87.nqueens.ui.composables.squares.SquaresAndQueens
 import com.carlosjimz87.rules.model.Cell
 import com.carlosjimz87.rules.model.Conflicts
@@ -29,7 +29,7 @@ fun Board(
             conflicts = conflicts
         )
 
-        ConflictLinesOverlay(
+        ConflictLines(
             size = size,
             conflicts = conflicts,
             color = cs.error.copy(alpha = 0.65f),

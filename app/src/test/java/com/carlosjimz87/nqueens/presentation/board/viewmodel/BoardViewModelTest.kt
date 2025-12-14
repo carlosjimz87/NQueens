@@ -2,11 +2,11 @@ package com.carlosjimz87.nqueens.presentation.board.viewmodel
 
 import com.carlosjimz87.nqueens.MainDispatcherRule
 import com.carlosjimz87.nqueens.di.testModule
-import com.carlosjimz87.rules.model.BoardError
-import com.carlosjimz87.rules.model.GameStatus
 import com.carlosjimz87.nqueens.presentation.board.event.UiEvent
 import com.carlosjimz87.nqueens.presentation.board.state.UiState
+import com.carlosjimz87.rules.model.BoardError
 import com.carlosjimz87.rules.model.Cell
+import com.carlosjimz87.rules.model.GameStatus
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.advanceUntilIdle
@@ -299,11 +299,11 @@ class BoardViewModelTest {
 
         advanceUntilIdle()
 
-        // For now, conflicts = 0, so any 4 distinct cells will trigger Solved
-        vm.onCellClicked(Cell(row = 0, col = 0))
-        vm.onCellClicked(Cell(row = 1, col = 1))
-        vm.onCellClicked(Cell(row = 2, col = 2))
-        vm.onCellClicked(Cell(row = 3, col = 3))
+        // For a 4x4 board, a valid solution is (0,1), (1,3), (2,0), (3,2)
+        vm.onCellClicked(Cell(row = 0, col = 1))
+        vm.onCellClicked(Cell(row = 1, col = 3))
+        vm.onCellClicked(Cell(row = 2, col = 0))
+        vm.onCellClicked(Cell(row = 3, col = 2))
 
         advanceUntilIdle()
 

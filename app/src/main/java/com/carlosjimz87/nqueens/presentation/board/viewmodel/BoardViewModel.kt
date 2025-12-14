@@ -3,17 +3,15 @@ package com.carlosjimz87.nqueens.presentation.board.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.carlosjimz87.nqueens.common.Constants
-import com.carlosjimz87.nqueens.domain.model.SnapshotFlags
 import com.carlosjimz87.nqueens.presentation.board.event.UiEvent
 import com.carlosjimz87.nqueens.presentation.board.state.UiState
 import com.carlosjimz87.nqueens.presentation.timer.GameTimer
-import com.carlosjimz87.rules.board.BoardChecker
-import com.carlosjimz87.rules.game.GameStatusCalculator
-import com.carlosjimz87.rules.game.QueenConflictsChecker
-import com.carlosjimz87.rules.model.BoardError
+import com.carlosjimz87.rules.either.Result
 import com.carlosjimz87.rules.model.Cell
 import com.carlosjimz87.rules.model.Conflicts
+import com.carlosjimz87.rules.model.GameState
 import com.carlosjimz87.rules.model.GameStatus
+import com.carlosjimz87.rules.solver.NQueensSolver
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -30,21 +28,19 @@ import kotlinx.coroutines.launch
  * queen positions, conflicts, and overall game status.
  *
  * @param timer The [GameTimer] instance to track the elapsed time of the game.
- * @param conflictsChecker The [QueenConflictsChecker] instance used to detect conflicts between queens.
+ * @param solver The [NQueensSolver] instance used to manage the game logic.
  *
  * @property conflicts A [StateFlow] emitting the current set of conflicting cells on the board.
  * @property boardSize A [StateFlow] emitting the current size (N) of the N-Queens board.
  * @property uiState A [StateFlow] representing the current state of the UI (e.g., Idle, Loading, Error).
  * @property queens A [StateFlow] emitting the set of cells where queens are currently placed.
- * @property events A [SharedFlow] for sending one-time UI events (like sounds or toasts) to the view.
  * @property gameStatus A [StateFlow] emitting the current status of the game (e.g., NotStarted, InProgress, Solved).
  * @property elapsedMillis A [StateFlow] emitting the elapsed game time in milliseconds.
+ * @property events A [SharedFlow] for sending one-time UI events (like sounds or toasts) to the view.
  */
 class BoardViewModel(
     private val timer: GameTimer,
-    private val conflictsChecker: QueenConflictsChecker,
-    private val boardChecker: BoardChecker,
-    private val statusCalculator: GameStatusCalculator
+    private val solver: NQueensSolver,
 ) : ViewModel() {
 
     private val _conflicts = MutableStateFlow(Conflicts.Empty)
@@ -67,54 +63,70 @@ class BoardViewModel(
     private val _events = MutableSharedFlow<UiEvent>(replay = 0, extraBufferCapacity = 1)
     val events: SharedFlow<UiEvent> = _events
 
-    private var movesCount: Int = 0
-    private var lastConflictCellsCount: Int = 0
-
     init {
-        applySize(Constants.DEFAULT_COLUMNS_ROWS)
+        onSizeChanged(Constants.DEFAULT_COLUMNS_ROWS)
     }
 
-    fun onSizeChanged(newSize: Int) = applySize(newSize)
+    fun onSizeChanged(newSize: Int) {
+        if (_boardSize.value == newSize) return
+
+        viewModelScope.launch {
+            _uiState.value = UiState.Loading
+            delay(150)
+
+            solver.setBoardSize(newSize)
+                .let { result ->
+                    when (result) {
+                        is Result.Ok -> {
+                            updateState(result.value)
+                            _uiState.value = UiState.Idle
+                            emit(UiEvent.BoardReset)
+                            timer.reset()
+                        }
+
+                        is Result.Err -> {
+                            _uiState.value = UiState.InvalidBoard(
+                                message = "Invalid size: $newSize",
+                                error = result.error
+                            )
+                        }
+
+                        else -> {}
+                    }
+                }
+
+        }
+    }
 
     fun onCellClicked(cell: Cell) {
-        val size = _boardSize.value ?: return
-        val current = _queens.value
-        val isPlacing = cell !in current
+        val currentQueens = _queens.value
+        val isPlacing = cell !in currentQueens
 
-        if (isPlacing && current.isEmpty()) timer.start()
-        movesCount++
+        if (isPlacing && currentQueens.isEmpty()) {
+            timer.start()
+        }
 
-        val nextQueens = if (isPlacing) current + cell else current - cell
+        val gameState = if (isPlacing) {
+            solver.placeQueen(cell)
+        } else {
+            solver.removeQueen(cell)
+        }
 
-        val (conflictOnPlacedCell) = applySnapshot(
-            size = size,
-            queens = nextQueens,
-            placedCell = if (isPlacing) cell else null
-        )
+        updateState(gameState)
 
+        val conflictOnPlacedCell = gameState.conflicts.conflictsFor(cell).isNotEmpty()
         emit(moveEvent(isPlacing, cell, conflictOnPlacedCell))
+
+        if (gameState.status is GameStatus.Solved) {
+            timer.stop()
+        }
     }
 
-    private fun applySnapshot(size: Int, queens: Set<Cell>, placedCell: Cell?): SnapshotFlags {
-        _queens.value = queens
-
-        val nextConflicts = conflictsChecker.check(size = size, queens = queens)
-        _conflicts.value = nextConflicts
-
-        val conflictOnPlacedCell =
-            placedCell != null && nextConflicts.conflictsFor(placedCell).isNotEmpty()
-
-        val status = statusCalculator.compute(
-            size = size,
-            queensCount = queens.size,
-            conflicts = nextConflicts,
-            moves = movesCount
-        )
-
-        if (status is GameStatus.Solved) timer.stop()
-        _gameStatus.value = status
-
-        return SnapshotFlags(conflictOnPlacedCell)
+    private fun updateState(gameState: GameState) {
+        _boardSize.value = gameState.size
+        _queens.value = gameState.queens
+        _conflicts.value = gameState.conflicts
+        _gameStatus.value = gameState.status
     }
 
     private fun moveEvent(isPlacing: Boolean, cell: Cell, conflictStarted: Boolean): UiEvent {
@@ -123,37 +135,6 @@ class BoardViewModel(
             conflictStarted -> UiEvent.ConflictDetected
             else -> UiEvent.QueenPlaced(cell)
         }
-    }
-
-    private fun applySize(size: Int) {
-        if (_boardSize.value == size) return
-
-        viewModelScope.launch {
-            _uiState.value = UiState.Loading
-            delay(150)
-
-            val error = boardChecker.validateSize(size)
-            if (error == BoardError.NoError) {
-                resetGame(size)
-            } else {
-                _uiState.value = UiState.InvalidBoard(
-                    message = "Invalid size: $size",
-                    error = error
-                )
-            }
-        }
-    }
-
-    private fun resetGame(size: Int) {
-        _boardSize.value = size
-        movesCount = 0
-        lastConflictCellsCount = 0
-
-        timer.reset()
-        applySnapshot(size = size, queens = emptySet(), placedCell = null)
-
-        _uiState.value = UiState.Idle
-        emit(UiEvent.BoardReset)
     }
 
     private fun emit(event: UiEvent) {

@@ -9,7 +9,7 @@ import com.carlosjimz87.rules.model.Cell
 import com.carlosjimz87.rules.model.Conflicts
 
 @Composable
-fun ConflictLinesOverlay(
+fun ConflictLines(
     size: Int,
     conflicts: Conflicts,
     color: Color,

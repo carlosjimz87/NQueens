@@ -25,7 +25,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
-import com.carlosjimz87.nqueens.domain.model.GameStatus
+import com.carlosjimz87.rules.model.GameStatus
 import com.carlosjimz87.nqueens.presentation.audio.AndroidSoundEffectPlayer
 import com.carlosjimz87.nqueens.presentation.board.event.UiEvent
 import com.carlosjimz87.nqueens.presentation.board.state.UiState
