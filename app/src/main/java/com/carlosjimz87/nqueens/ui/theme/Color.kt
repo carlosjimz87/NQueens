@@ -1,6 +1,7 @@
 package com.carlosjimz87.nqueens.ui.theme
 
 import androidx.compose.ui.graphics.Color
+
 val GoldCrown = Color(0xFFF7C843)
 val GoldDeep = Color(0xFFD1A431)
 

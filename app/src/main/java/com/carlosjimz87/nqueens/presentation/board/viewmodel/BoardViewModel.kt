@@ -131,4 +131,28 @@ class BoardViewModel(
     private fun emit(event: UiEvent) {
         _events.tryEmit(event)
     }
+
+    fun resetGame() {
+        val size = _boardSize.value ?: return
+
+        viewModelScope.launch {
+            _uiState.value = UiState.Loading
+            delay(150)
+
+            when (val result = solver.setBoardSize(size)) {
+                is Result.Ok -> {
+                    updateState(result.value)
+                    _uiState.value = UiState.Idle
+                    emit(UiEvent.BoardReset)
+                    timer.reset()
+                }
+                is Result.Err -> {
+                    _uiState.value = UiState.InvalidBoard(
+                        message = "Invalid size: $size",
+                        error = result.error
+                    )
+                }
+            }
+        }
+    }
 }

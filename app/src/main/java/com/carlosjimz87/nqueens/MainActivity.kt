@@ -17,9 +17,7 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             NQueensTheme {
-                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    BoardScreen(Modifier.padding(innerPadding))
-                }
+                BoardScreen(modifier = Modifier.fillMaxSize())
             }
         }
     }

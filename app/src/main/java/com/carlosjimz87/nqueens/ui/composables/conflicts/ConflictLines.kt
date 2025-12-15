@@ -5,6 +5,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.StrokeCap
 import com.carlosjimz87.rules.model.Cell
 import com.carlosjimz87.rules.model.Conflicts
 
@@ -34,7 +35,8 @@ fun ConflictLines(
                 color = color,
                 start = centerOf(aCell),
                 end = centerOf(bCell),
-                strokeWidth = strokePx
+                strokeWidth = strokePx,
+                cap = StrokeCap.Round
             )
         }
     }

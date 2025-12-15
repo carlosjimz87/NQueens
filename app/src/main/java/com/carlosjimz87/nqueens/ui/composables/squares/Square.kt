@@ -26,6 +26,7 @@ import androidx.compose.ui.unit.dp
 import com.carlosjimz87.nqueens.R
 import com.carlosjimz87.nqueens.ui.theme.BoardDark
 import com.carlosjimz87.nqueens.ui.theme.BoardLight
+import com.carlosjimz87.nqueens.ui.theme.GlowBlue
 
 @Composable
 fun Square(
@@ -41,24 +42,35 @@ fun Square(
     val strokeWidth = if (isConflicting) 2.dp else 0.dp
 
     var prevHasQueen by remember { mutableStateOf(hasQueen) }
-
     val iconScale = remember { Animatable(1f) }
+    val glow = remember { Animatable(0f) }
 
     LaunchedEffect(hasQueen) {
         val becameTrue = !prevHasQueen && hasQueen
-
         if (becameTrue) {
             iconScale.snapTo(1f)
+            glow.snapTo(1f)
+
             iconScale.animateTo(1.15f, tween(110, easing = FastOutSlowInEasing))
             iconScale.animateTo(1f, tween(220, easing = LinearOutSlowInEasing))
+
+            glow.animateTo(0f, tween(380, easing = LinearOutSlowInEasing))
         }
+        prevHasQueen = hasQueen
     }
+
+    val glowColor = GlowBlue.copy(alpha = 0.18f * glow.value)
 
     Box(
         modifier = modifier
             .background(base)
             .drawWithContent {
                 drawContent()
+
+                if (glow.value > 0f) {
+                    drawRect(glowColor)
+                }
+
                 if (isConflicting) {
                     drawRect(color = cs.error.copy(alpha = overlayAlpha))
                     val px = strokeWidth.toPx()
