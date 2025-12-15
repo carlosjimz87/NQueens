@@ -13,7 +13,6 @@ import com.carlosjimz87.rules.model.Conflicts
 import com.carlosjimz87.rules.model.GameState
 import com.carlosjimz87.rules.model.GameStatus
 import com.carlosjimz87.rules.solver.NQueensSolver
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
@@ -42,9 +41,13 @@ import kotlinx.coroutines.launch
 class BoardViewModel(
     private val timer: GameTimer,
     private val solver: NQueensSolver,
-    private val statsRepo: StatsRepository
+    private val statsRepo: StatsRepository,
+    private val initialSize: Int? = null,
 ) : ViewModel() {
 
+    init {
+        initialSize?.let { applySize(it, force = true) }
+    }
     private val _conflicts = MutableStateFlow(Conflicts.Empty)
     val conflicts: StateFlow<Conflicts> = _conflicts
 
@@ -77,7 +80,6 @@ class BoardViewModel(
 
         viewModelScope.launch {
             _uiState.value = UiState.Loading
-            delay(150)
 
             timer.reset()
 

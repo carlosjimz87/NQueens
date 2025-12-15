@@ -5,6 +5,7 @@ import com.carlosjimz87.nqueens.presentation.board.viewmodel.BoardViewModel
 import com.carlosjimz87.nqueens.presentation.timer.CoroutineGameTimer
 import com.carlosjimz87.nqueens.presentation.timer.GameTimer
 import com.carlosjimz87.nqueens.store.manager.StoreManager
+import com.carlosjimz87.nqueens.store.manager.StoreManagerImpl
 import com.carlosjimz87.nqueens.store.model.StatsState
 import com.carlosjimz87.nqueens.store.repo.StatsRepository
 import com.carlosjimz87.nqueens.store.repo.StatsRepositoryImpl
@@ -34,7 +35,7 @@ val appModule = module {
 
     // Store for StatsState in DataStore
     single<StoreManager<StatsState>> {
-        StoreManager(
+        StoreManagerImpl(
             context = androidContext(),
             key = STATS_KEY,
             serializer = StatsState.serializer(),
