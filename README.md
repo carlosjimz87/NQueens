@@ -6,6 +6,25 @@ The app allows users to play, solve, and track their performance across differen
 
 ---
 
+## 🎥 Demo
+
+<div class="video-container">
+  <video autoplay loop muted playsinline width="33%">
+    <source src="images/1.webm" type="video/webm">
+    Your browser does not support the video tag.
+  </video>
+  <video autoplay loop muted playsinline width="33%">
+    <source src="images/2.webm" type="video/webm">
+    Your browser does not support the video tag.
+  </video>
+  <video autoplay loop muted playsinline width="33%">
+    <source src="images/3.webm" type="video/webm">
+    Your browser does not support the video tag.
+  </video>
+</div>
+
+---
+
 ## ✨ Features
 
 - 🧩 Interactive N-Queens board (from 4×4 up to 20×20)
