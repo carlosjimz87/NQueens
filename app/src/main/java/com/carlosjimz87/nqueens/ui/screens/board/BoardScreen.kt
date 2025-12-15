@@ -15,7 +15,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -36,7 +35,6 @@ import com.carlosjimz87.nqueens.ui.composables.dialogs.BoardSizeDialog
 import com.carlosjimz87.nqueens.ui.composables.dialogs.WinDialog
 import com.carlosjimz87.nqueens.ui.composables.game.GameHud
 import com.carlosjimz87.rules.model.GameStatus
-import kotlinx.coroutines.launch
 import org.koin.androidx.compose.koinViewModel
 
 @Composable
@@ -44,124 +42,37 @@ fun BoardScreen(
     modifier: Modifier = Modifier,
     viewModel: BoardViewModel = koinViewModel()
 ) {
-    val cs = MaterialTheme.colorScheme
-    val typography = MaterialTheme.typography
-
+    // --- State Collection ---
     val boardSize by viewModel.boardSize.collectAsState()
     val uiState by viewModel.uiState.collectAsState()
     val queens by viewModel.queens.collectAsState()
     val conflicts by viewModel.conflicts.collectAsState()
     val gameStatus by viewModel.gameStatus.collectAsState()
     val elapsedMillis by viewModel.elapsedMillis.collectAsState()
-    var didCompleteSetup by rememberSaveable { mutableStateOf(false) }
 
+    // --- Local UI State ---
     val snackbarHostState = remember { SnackbarHostState() }
-    val context = LocalContext.current
-    val soundPlayer = remember(context.applicationContext) {
-        AndroidSoundEffectPlayer(context.applicationContext)
-    }
-    val isLoading = uiState is UiState.Loading
-
-    // --- Dialog state
     var showChangeSizeDialog by rememberSaveable { mutableStateOf(false) }
-    var showWinDialog by rememberSaveable { mutableStateOf(false) }
 
-    // Stepper local state
-    var pendingSize by rememberSaveable { mutableIntStateOf(Constants.DEFAULT_COLUMNS_ROWS) }
+    // --- Handlers ---
+    val soundPlayer = rememberSoundPlayer()
 
-    // Only show setup dialog once: if boardSize already exists (e.g. process restore), skip it
-    LaunchedEffect(boardSize) {
-        if (boardSize != null) didCompleteSetup = true
-    }
+    // --- Effects and Dialogs ---
+    BoardScreenEffects(
+        viewModel = viewModel,
+        snackbarHostState = snackbarHostState,
+        soundPlayer = soundPlayer
+    )
 
-    var showSetupDialog = !didCompleteSetup
+    BoardScreenDialogs(
+        viewModel = viewModel,
+        gameStatus = gameStatus,
+        elapsedMillis = elapsedMillis,
+        showChangeSizeDialog = showChangeSizeDialog,
+        onDismissChangeSizeDialog = { showChangeSizeDialog = false }
+    )
 
-    // Win dialog trigger (only once per solved)
-    var prevSolved by rememberSaveable { mutableStateOf(false) }
-    val isSolved = gameStatus is GameStatus.Solved
-    LaunchedEffect(isSolved) {
-        if (isSolved && !prevSolved) {
-            showWinDialog = true
-            soundPlayer.playSolved()
-        }
-        prevSolved = isSolved
-    }
-
-    // Existing effects: invalid board + move sounds
-    LaunchedEffect(viewModel) {
-        launch {
-            viewModel.uiState.collect { state ->
-                if (state is UiState.InvalidBoard) snackbarHostState.showSnackbar(state.message)
-            }
-        }
-        launch {
-            viewModel.events.collect { event ->
-                when (event) {
-                    is UiEvent.QueenPlaced -> soundPlayer.playQueenPlaced()
-                    is UiEvent.QueenRemoved -> soundPlayer.playQueenRemoved()
-                    is UiEvent.BoardReset -> soundPlayer.playStart()
-                    is UiEvent.ConflictDetected -> soundPlayer.playConflict()
-                }
-            }
-        }
-    }
-
-    // --- Setup Dialog (shown at app start)
-    if (showSetupDialog) {
-        BoardSizeDialog(
-            title = "Choose board size",
-            initial = pendingSize,
-            min = 4,
-            max = 20,
-            confirmText = "Start",
-            onDismiss = { /* Don't allow dismiss on initial setup */ },
-            dismissEnabled = false,
-            onConfirm = { size ->
-                pendingSize = size
-                viewModel.onSizeChanged(size)
-                showSetupDialog = false
-            }
-        )
-    }
-
-    // --- Change size dialog (triggered by small button)
-    if (showChangeSizeDialog) {
-        BoardSizeDialog(
-            title = "Change board size",
-            initial = pendingSize,
-            min = 4,
-            max = 20,
-            confirmText = "Apply",
-            onDismiss = { showChangeSizeDialog = false },
-            dismissEnabled = true,
-            onConfirm = { size ->
-                pendingSize = size
-                viewModel.onSizeChanged(size) // resets game because solver.setBoardSize
-                showChangeSizeDialog = false
-            }
-        )
-    }
-
-    // --- Win dialog
-    if (showWinDialog) {
-        val solved = gameStatus as? GameStatus.Solved
-        if (solved != null) {
-            WinDialog(
-                solved = solved,
-                elapsedMillis = elapsedMillis,
-                onPlayAgain = {
-                    showWinDialog = false
-                    viewModel.resetGame()
-                },
-                onNextLevel = {
-                    showWinDialog = false
-                    val next = (boardSize ?: solved.size) + 1
-                    viewModel.onSizeChanged(next)
-                }
-            )
-        }
-    }
-
+    // --- UI Layout ---
     Scaffold(
         modifier = modifier.fillMaxSize(),
         snackbarHost = { SnackbarHost(snackbarHostState) }
@@ -173,22 +84,22 @@ fun BoardScreen(
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
+            val isLoading = uiState is UiState.Loading
 
-            if (boardSize != null) {
+            // --- Top HUD ---
+            boardSize?.let {
                 GameHud(
-                    size = boardSize!!,
+                    size = it,
                     status = gameStatus,
                     elapsedMillis = elapsedMillis,
                     isLoading = isLoading,
-                    onChange = {
-                        pendingSize = boardSize ?: pendingSize
-                        showChangeSizeDialog = true
-                    },
-                    onReset = { viewModel.resetGame() },
+                    onChange = { showChangeSizeDialog = true },
+                    onReset = viewModel::resetGame,
                     modifier = Modifier.fillMaxWidth()
                 )
             }
 
+            // --- Main Content (Board) ---
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -196,8 +107,7 @@ fun BoardScreen(
                 contentAlignment = Alignment.Center
             ) {
                 when {
-                    isLoading -> CircularProgressIndicator(color = cs.primary)
-
+                    isLoading -> CircularProgressIndicator()
                     boardSize != null -> BoardContainer(Modifier.fillMaxSize()) {
                         Board(
                             size = boardSize!!,
@@ -206,14 +116,118 @@ fun BoardScreen(
                             onCellClick = viewModel::onCellClicked
                         )
                     }
-
                     else -> InvalidBoard(
                         modifier = Modifier.fillMaxWidth(),
-                        typography = typography,
-                        cs = cs
+                        typography = MaterialTheme.typography,
+                        cs = MaterialTheme.colorScheme
                     )
                 }
             }
         }
+    }
+}
+
+@Composable
+private fun BoardScreenEffects(
+    viewModel: BoardViewModel,
+    snackbarHostState: SnackbarHostState,
+    soundPlayer: AndroidSoundEffectPlayer
+) {
+    // Effect for showing snackbar on invalid board state
+    LaunchedEffect(viewModel, snackbarHostState) {viewModel.uiState.collect { state ->
+        if (state is UiState.InvalidBoard) {
+            snackbarHostState.showSnackbar(state.message)
+        }
+    }
+    }
+
+    // Effect for playing sounds based on game events
+    LaunchedEffect(viewModel, soundPlayer) {
+        viewModel.events.collect { event ->
+            when (event) {
+                is UiEvent.QueenPlaced -> soundPlayer.playQueenPlaced()
+                is UiEvent.QueenRemoved -> soundPlayer.playQueenRemoved()
+                is UiEvent.BoardReset -> soundPlayer.playStart()
+                is UiEvent.ConflictDetected -> soundPlayer.playConflict()
+            }
+        }
+    }
+}
+
+@Composable
+private fun BoardScreenDialogs(
+    viewModel: BoardViewModel,
+    gameStatus: GameStatus?,
+    elapsedMillis: Long,
+    showChangeSizeDialog: Boolean,
+    onDismissChangeSizeDialog: () -> Unit
+) {
+    val boardSize by viewModel.boardSize.collectAsState()
+    var didCompleteSetup by rememberSaveable { mutableStateOf(boardSize != null) }
+
+    // --- Setup Dialog (shown only once at app start) ---
+    if (!didCompleteSetup) {
+        BoardSizeDialog(
+            title = "Choose board size",
+            initial = Constants.DEFAULT_COLUMNS_ROWS,
+            min = 4,
+            max = 20,
+            confirmText = "Start",
+            dismissEnabled = false,
+            onDismiss = { /* Not dismissible */ },
+            onConfirm = { size ->
+                viewModel.onSizeChanged(size)
+                didCompleteSetup = true // This hides the dialog permanently
+            }
+        )
+    }
+
+    // --- Change Size Dialog ---
+    if (showChangeSizeDialog) {
+        BoardSizeDialog(
+            title = "Change board size",
+            initial = boardSize ?: Constants.DEFAULT_COLUMNS_ROWS,
+            min = 4,
+            max = 20,
+            confirmText = "Apply",
+            dismissEnabled = true,
+            onDismiss = onDismissChangeSizeDialog,
+            onConfirm = { size ->
+                viewModel.onSizeChanged(size)
+                onDismissChangeSizeDialog()
+            }
+        )
+    }
+
+    // --- Win Dialog ---
+    val isSolved = gameStatus is GameStatus.Solved
+    var showWinDialog by remember(isSolved) { mutableStateOf(isSolved) }
+
+    if (isSolved && showWinDialog) {
+        val soundPlayer = rememberSoundPlayer()
+        LaunchedEffect(Unit) {
+            soundPlayer.playSolved()
+        }
+        WinDialog(
+            solved = gameStatus as GameStatus.Solved,
+            elapsedMillis = elapsedMillis,
+            onPlayAgain = {
+                showWinDialog = false
+                viewModel.resetGame()
+            },
+            onNextLevel = {
+                showWinDialog = false
+                val nextSize = (gameStatus.size) + 1
+                viewModel.onSizeChanged(nextSize)
+            }
+        )
+    }
+}
+
+@Composable
+private fun rememberSoundPlayer(): AndroidSoundEffectPlayer {
+    val context = LocalContext.current
+    return remember(context.applicationContext) {
+        AndroidSoundEffectPlayer(context.applicationContext)
     }
 }
