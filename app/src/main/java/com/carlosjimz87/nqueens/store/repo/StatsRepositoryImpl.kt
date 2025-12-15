@@ -17,10 +17,10 @@ class StatsRepositoryImpl(
 
     override fun leaderboards(size: Int, limit: Int): Flow<Leaderboards> {
         return stats.map { state ->
-            val scoped = state.entries.filter { it.size == size }
+            val (byTime, byMoves) = getSortedScores(state.entries, size, limit)
             Leaderboards(
-                byTime = scoped.sortedWith(compareBy<ScoreEntry> { it.timeMillis }.thenBy { it.moves }).take(limit),
-                byMoves = scoped.sortedWith(compareBy<ScoreEntry> { it.moves }.thenBy { it.timeMillis }).take(limit),
+                byTime = byTime,
+                byMoves = byMoves,
             )
         }
     }
@@ -45,9 +45,7 @@ class StatsRepositoryImpl(
                 else -> state.entries
             }
 
-            val scoped = next.filter { it.size == size }
-            val byTime = scoped.sortedWith(compareBy<ScoreEntry> { it.timeMillis }.thenBy { it.moves }).take(limit)
-            val byMoves = scoped.sortedWith(compareBy<ScoreEntry> { it.moves }.thenBy { it.timeMillis }).take(limit)
+            val (byTime, byMoves) = getSortedScores(next, size, limit)
 
             rankTime = byTime.indexOfFirst { it.id == newEntry.id }.let { if (it >= 0) it + 1 else 0 }
             rankMoves = byMoves.indexOfFirst { it.id == newEntry.id }.let { if (it >= 0) it + 1 else 0 }
@@ -56,5 +54,12 @@ class StatsRepositoryImpl(
         }
 
         return RecordResult(newEntry, rankTime, rankMoves)
+    }
+
+    private fun getSortedScores(entries: List<ScoreEntry>, size: Int, limit: Int): Pair<List<ScoreEntry>, List<ScoreEntry>> {
+        val scoped = entries.filter { it.size == size }
+        val byTime = scoped.sortedWith(compareBy<ScoreEntry> { it.timeMillis }.thenBy { it.moves }).take(limit)
+        val byMoves = scoped.sortedWith(compareBy<ScoreEntry> { it.moves }.thenBy { it.timeMillis }).take(limit)
+        return Pair(byTime, byMoves)
     }
 }
