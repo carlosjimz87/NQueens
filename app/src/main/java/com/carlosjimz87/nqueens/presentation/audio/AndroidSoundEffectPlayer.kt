@@ -9,6 +9,8 @@ import com.carlosjimz87.nqueens.R
  * An implementation of [SoundEffectPlayer] that uses Android's [MediaPlayer]
  * to play sound effects from raw resources. This encapsulates the sound playing logic
  * and provides methods to play specific sound effects for game events.
+ *
+ * @param context The Android [Context] required to create [MediaPlayer] instances.
  */
 class AndroidSoundEffectPlayer(
     private val context: Context

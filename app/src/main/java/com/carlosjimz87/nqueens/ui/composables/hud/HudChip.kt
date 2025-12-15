@@ -1,4 +1,4 @@
-package com.carlosjimz87.nqueens.ui.composables.game
+package com.carlosjimz87.nqueens.ui.composables.hud
 
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
@@ -23,7 +23,7 @@ fun HudChip(
     AssistChip(
         modifier = modifier
             .fillMaxWidth()
-            .heightIn(min = 40.dp), // altura estable
+            .heightIn(min = 40.dp), // min height
         onClick = {},
         label = {
             Text(

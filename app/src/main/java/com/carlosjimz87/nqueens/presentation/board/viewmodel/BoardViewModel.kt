@@ -20,6 +20,8 @@ import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import com.carlosjimz87.nqueens.store.model.Leaderboards
+import kotlinx.coroutines.flow.Flow
 
 /**
  * ViewModel for the N-Queens game board screen.
@@ -47,9 +49,14 @@ class BoardViewModel(
     private val initialSize: Int? = null,
 ) : ViewModel() {
 
+    /**
+     * Initializes the ViewModel. If an [initialSize] is provided, it attempts to apply
+     * that board size to start the game.
+     */
     init {
         initialSize?.let { applySize(it, force = true) }
     }
+
     private val _conflicts = MutableStateFlow(Conflicts.Empty)
     val conflicts: StateFlow<Conflicts> = _conflicts
 
@@ -76,10 +83,29 @@ class BoardViewModel(
     private val _latestRank = MutableStateFlow<LatestRank?>(null)
     val latestRank: StateFlow<LatestRank?> = _latestRank
 
+    /**
+     * Retrieves the leaderboards for a given board size from the [StatsRepository].
+     *
+     * @param size The board size for which to fetch leaderboards.
+     * @return A [Flow] of [Leaderboards] for the specified size.
+     */
     fun leaderboards(size: Int) = statsRepo.leaderboards(size)
 
+    /**
+     * Handles a request from the UI to change the board size.
+     * Delegates to [applySize] to perform the actual size change and game reset.
+     *
+     * @param newSize The new desired size for the N-Queens board.
+     */
     fun onSizeChanged(newSize: Int) = applySize(newSize, force = false)
 
+    /**
+     * Applies a new board size, resetting the game state.
+     *
+     * @param size The new size for the N-Queens board.
+     * @param force If true, the size will be applied even if it's the same as the current size.
+     *              Useful for re-initializing the board.
+     */
     private fun applySize(size: Int, force: Boolean) {
         if (!force && _boardSize.value == size) return
 
@@ -105,6 +131,14 @@ class BoardViewModel(
         }
     }
 
+    /**
+     * Handles a click event on a specific cell of the N-Queens board.
+     * This function determines whether to place a queen or remove an existing one.
+     * It also manages the game timer, updates the game state, and records game statistics
+     * if the puzzle is solved.
+     *
+     * @param cell The [Cell] that was clicked by the user.
+     */
     fun onCellClicked(cell: Cell) {
         val currentQueens = _queens.value
         val isPlacing = cell !in currentQueens
@@ -134,6 +168,12 @@ class BoardViewModel(
         }
     }
 
+    /**
+     * Updates all relevant [MutableStateFlow]s with data from a new [GameState].
+     * This method acts as a central point for state updates to ensure consistency.
+     *
+     * @param gs The new [GameState] to reflect in the UI state.
+     */
     private fun updateState(gs: GameState) {
         _gameState.value = gs
         _boardSize.value = gs.size
@@ -142,6 +182,15 @@ class BoardViewModel(
         _gameStatus.value = gs.status
     }
 
+    /**
+     * Creates a [UiEvent] based on the queen movement action and whether a conflict started.
+     * This event is typically used to trigger sound effects or visual feedback in the UI.
+     *
+     * @param isPlacing `true` if a queen was placed, `false` if it was removed.
+     * @param cell The [Cell] where the action occurred.
+     * @param conflictStarted `true` if placing a queen caused a new conflict, `false` otherwise.
+     * @return The appropriate [UiEvent] ([UiEvent.QueenRemoved], [UiEvent.ConflictDetected], or [UiEvent.QueenPlaced]).
+     */
     private fun moveEvent(isPlacing: Boolean, cell: Cell, conflictStarted: Boolean): UiEvent {
         return when {
             !isPlacing -> UiEvent.QueenRemoved(cell)
@@ -150,20 +199,38 @@ class BoardViewModel(
         }
     }
 
+    /**
+     * Helper function to emit [UiEvent]s through the [_events] [MutableSharedFlow].
+     * This is used for one-time events that the UI should react to (e.g., sound effects).
+     *
+     * @param event The [UiEvent] to emit.
+     */
     private fun emit(event: UiEvent) {
         _events.tryEmit(event)
     }
 
+    /**
+     * Resets the current game. This clears any previously recorded ranks and
+     * re-initializes the board with the current board size, effectively starting a new game.
+     */
     fun resetGame() {
         _latestRank.value = null
         val size = _boardSize.value ?: return
         applySize(size, force = true)
     }
 
+    /**
+     * Updates the game state to set the board phase to [BoardPhase.WinAnimating].
+     * This signals the UI to start any winning animation sequence.
+     */
     fun enterWinAnimation() {
         _gameState.update { it?.copy(boardPhase = BoardPhase.WinAnimating) }
     }
 
+    /**
+     * Updates the game state to set the board phase to [BoardPhase.WinFrozen] after the win animation has finished.
+     * This typically means the winning state is displayed statically to the user.
+     */
     fun onWinAnimationFinished() {
         _gameState.update { it?.copy(boardPhase = BoardPhase.WinFrozen) }
     }

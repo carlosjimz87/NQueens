@@ -38,7 +38,7 @@ import com.carlosjimz87.nqueens.ui.composables.board.WinAnimation
 import com.carlosjimz87.nqueens.ui.composables.dialogs.BoardSizeDialog
 import com.carlosjimz87.nqueens.ui.composables.dialogs.StatsDialog
 import com.carlosjimz87.nqueens.ui.composables.dialogs.WinDialog
-import com.carlosjimz87.nqueens.ui.composables.game.GameHud
+import com.carlosjimz87.nqueens.ui.composables.hud.GameHud
 import com.carlosjimz87.rules.model.BoardPhase
 import com.carlosjimz87.rules.model.Cell
 import com.carlosjimz87.rules.model.GameStatus
