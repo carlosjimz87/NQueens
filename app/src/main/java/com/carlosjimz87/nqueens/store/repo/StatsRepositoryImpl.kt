@@ -34,18 +34,24 @@ class StatsRepositoryImpl(
             epochMillis = System.currentTimeMillis()
         )
 
-        val rankTime = 0
-        val rankMoves = 0
+        var rankTime = 0
+        var rankMoves = 0
 
         store.update { state ->
             val existing = state.entries.firstOrNull { it.size == size && it.moves == moves }
             val next = when {
                 existing == null -> state.entries + newEntry
                 timeMillis < existing.timeMillis -> state.entries - existing + newEntry
-                else -> state.entries // worse or equal -> ignore
+                else -> state.entries
             }
 
-            // compute ranks from `next` (scoped = next.filter { it.size == size }) etc...
+            val scoped = next.filter { it.size == size }
+            val byTime = scoped.sortedWith(compareBy<ScoreEntry> { it.timeMillis }.thenBy { it.moves }).take(limit)
+            val byMoves = scoped.sortedWith(compareBy<ScoreEntry> { it.moves }.thenBy { it.timeMillis }).take(limit)
+
+            rankTime = byTime.indexOfFirst { it.id == newEntry.id }.let { if (it >= 0) it + 1 else 0 }
+            rankMoves = byMoves.indexOfFirst { it.id == newEntry.id }.let { if (it >= 0) it + 1 else 0 }
+
             state.copy(entries = next)
         }
 
