@@ -1,11 +1,14 @@
 package com.carlosjimz87.nqueens.di
 
+import androidx.datastore.core.DataStore
+import androidx.datastore.preferences.core.Preferences
 import com.carlosjimz87.nqueens.common.Constants.STATS_KEY
 import com.carlosjimz87.nqueens.presentation.board.viewmodel.BoardViewModel
 import com.carlosjimz87.nqueens.presentation.timer.CoroutineGameTimer
 import com.carlosjimz87.nqueens.presentation.timer.GameTimer
 import com.carlosjimz87.nqueens.store.manager.StoreManager
 import com.carlosjimz87.nqueens.store.manager.StoreManagerImpl
+import com.carlosjimz87.nqueens.store.manager.appDataStore
 import com.carlosjimz87.nqueens.store.model.StatsState
 import com.carlosjimz87.nqueens.store.repo.StatsRepository
 import com.carlosjimz87.nqueens.store.repo.StatsRepositoryImpl
@@ -33,10 +36,12 @@ val appModule = module {
         }
     }
 
+    single<DataStore<Preferences>> { androidContext().appDataStore }
+
     // Store for StatsState in DataStore
     single<StoreManager<StatsState>> {
         StoreManagerImpl(
-            context = androidContext(),
+            dataStore = get(),
             key = STATS_KEY,
             serializer = StatsState.serializer(),
             defaultValue = StatsState(),
