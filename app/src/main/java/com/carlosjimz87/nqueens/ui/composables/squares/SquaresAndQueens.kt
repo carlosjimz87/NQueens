@@ -14,7 +14,8 @@ fun SquaresAndQueens(
     size: Int,
     queens: Set<Cell>,
     onCellClick: (Cell) -> Unit,
-    conflicts: Conflicts
+    conflicts: Conflicts,
+    showQueens: Boolean
 ) {
     Column(Modifier.fillMaxSize()) {
         for (rank in size - 1 downTo 0) {
@@ -31,6 +32,7 @@ fun SquaresAndQueens(
                             .clickable { onCellClick(cell) },
                         isDarkSquare = isDark,
                         hasQueen = hasQueen,
+                        showQueen = showQueens,
                         isConflicting = cell in conflicts.conflictCells
                     )
                 }

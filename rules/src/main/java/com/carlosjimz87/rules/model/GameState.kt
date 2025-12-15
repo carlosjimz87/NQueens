@@ -5,4 +5,5 @@ data class GameState(
     val queens: Set<Cell> = emptySet(),
     val conflicts: Conflicts = Conflicts.Empty,
     val status: GameStatus,
+    val boardPhase : BoardPhase = BoardPhase.Normal
 )

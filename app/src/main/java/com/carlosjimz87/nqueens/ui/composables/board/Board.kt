@@ -16,7 +16,8 @@ fun Board(
     queens: Set<Cell>,
     conflicts: Conflicts,
     onCellClick: (Cell) -> Unit,
-    modifier: Modifier = Modifier
+    showQueens: Boolean,
+    modifier: Modifier = Modifier,
 ) {
     val cs = MaterialTheme.colorScheme
 
@@ -26,7 +27,8 @@ fun Board(
             size = size,
             queens = queens,
             onCellClick = onCellClick,
-            conflicts = conflicts
+            conflicts = conflicts,
+            showQueens = showQueens
         )
 
         ConflictLines(

@@ -1,5 +1,6 @@
 package com.carlosjimz87.nqueens.ui.composables.squares
 
+import android.util.Log
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.LinearOutSlowInEasing
@@ -33,7 +34,8 @@ fun Square(
     modifier: Modifier,
     isDarkSquare: Boolean,
     hasQueen: Boolean,
-    isConflicting: Boolean
+    showQueen: Boolean,
+    isConflicting: Boolean,
 ) {
     val cs = MaterialTheme.colorScheme
     val base = if (isDarkSquare) BoardDark else BoardLight
@@ -46,6 +48,7 @@ fun Square(
     val glow = remember { Animatable(0f) }
 
     LaunchedEffect(hasQueen) {
+        Log.d("Square", "LaunchedEffect: hasQueen=$hasQueen, showQueen=$showQueen")
         val becameTrue = !prevHasQueen && hasQueen
         if (becameTrue) {
             iconScale.snapTo(1f)
@@ -82,7 +85,7 @@ fun Square(
             },
         contentAlignment = Alignment.Center
     ) {
-        if (hasQueen) {
+        if (hasQueen && showQueen) {
             Icon(
                 painter = painterResource(id = R.drawable.wq),
                 contentDescription = "Queen",

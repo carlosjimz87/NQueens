@@ -89,7 +89,7 @@ fun WinDialog(
                     AssistChip(
                         onClick = {},
                         label = { Text("Queens = ${solved.size}", style = typography.bodyMedium) },
-                        leadingIcon = { Icon(Icons.Outlined.Extension, contentDescription = null) } // mejor “pieza”
+                        leadingIcon = { Icon(Icons.Outlined.EmojiEvents, contentDescription = null) } // mejor “pieza”
                     )
 
                     AssistChip(

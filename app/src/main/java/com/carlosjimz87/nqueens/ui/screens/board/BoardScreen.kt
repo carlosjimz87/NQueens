@@ -15,6 +15,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -33,10 +34,13 @@ import com.carlosjimz87.nqueens.store.model.Leaderboards
 import com.carlosjimz87.nqueens.ui.composables.board.Board
 import com.carlosjimz87.nqueens.ui.composables.board.BoardContainer
 import com.carlosjimz87.nqueens.ui.composables.board.InvalidBoard
+import com.carlosjimz87.nqueens.ui.composables.board.WinAnimation
 import com.carlosjimz87.nqueens.ui.composables.dialogs.BoardSizeDialog
 import com.carlosjimz87.nqueens.ui.composables.dialogs.StatsDialog
 import com.carlosjimz87.nqueens.ui.composables.dialogs.WinDialog
 import com.carlosjimz87.nqueens.ui.composables.game.GameHud
+import com.carlosjimz87.rules.model.BoardPhase
+import com.carlosjimz87.rules.model.Cell
 import com.carlosjimz87.rules.model.GameStatus
 import org.koin.androidx.compose.koinViewModel
 
@@ -53,12 +57,19 @@ fun BoardScreen(
     val gameStatus by viewModel.gameStatus.collectAsState()
     val elapsedMillis by viewModel.elapsedMillis.collectAsState()
     val latestRank by viewModel.latestRank.collectAsState()
+    val gs by viewModel.gameState.collectAsState()
+    val phase = gs?.boardPhase ?: BoardPhase.Normal
+    var solvedQueens by rememberSaveable { mutableStateOf<List<Cell>>(emptyList()) }
 
     // --- Local UI State ---
     val snackbarHostState = remember { SnackbarHostState() }
     var showChangeSizeDialog by rememberSaveable { mutableStateOf(false) }
     var showStatsDialog by rememberSaveable { mutableStateOf(false) }
-    var showWinDialog by rememberSaveable { mutableStateOf(false) }
+    var winAnimToken by rememberSaveable { mutableIntStateOf(0) }
+    val animatingWin = phase == BoardPhase.WinAnimating
+    var showWinDialog = phase == BoardPhase.WinFrozen
+    val showQueens = phase == BoardPhase.Normal
+    val allowClicks = phase == BoardPhase.Normal
 
     val soundPlayer = rememberSoundPlayer()
 
@@ -67,7 +78,11 @@ fun BoardScreen(
         viewModel = viewModel,
         snackbarHostState = snackbarHostState,
         soundPlayer = soundPlayer,
-        onSolved = { showWinDialog = true }
+        onSolved = {
+            solvedQueens = queens.toList()
+            winAnimToken++
+            viewModel.enterWinAnimation()
+        }
     )
 
     // --- Dialogs ---
@@ -132,7 +147,19 @@ fun BoardScreen(
                             size = boardSize!!,
                             queens = queens,
                             conflicts = conflicts,
-                            onCellClick = viewModel::onCellClicked
+                            onCellClick = { if (allowClicks) viewModel.onCellClicked(it) },
+                            showQueens = showQueens,
+                            modifier = Modifier.fillMaxSize()
+                        )
+
+                        WinAnimation(
+                            token = winAnimToken,
+                            size = boardSize!!,
+                            queens = solvedQueens,
+                            enabled = animatingWin,
+                            onFinished = {
+                                viewModel.onWinAnimationFinished()
+                            }
                         )
                     }
 

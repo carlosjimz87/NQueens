@@ -8,6 +8,7 @@ import com.carlosjimz87.nqueens.presentation.timer.GameTimer
 import com.carlosjimz87.nqueens.store.model.LatestRank
 import com.carlosjimz87.nqueens.store.repo.StatsRepository
 import com.carlosjimz87.rules.either.Result
+import com.carlosjimz87.rules.model.BoardPhase
 import com.carlosjimz87.rules.model.Cell
 import com.carlosjimz87.rules.model.Conflicts
 import com.carlosjimz87.rules.model.GameState
@@ -17,6 +18,7 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 /**
@@ -63,6 +65,9 @@ class BoardViewModel(
     private val _gameStatus = MutableStateFlow<GameStatus?>(null)
     val gameStatus: StateFlow<GameStatus?> = _gameStatus
 
+    private val _gameState = MutableStateFlow<GameState?>(null)
+    val gameState: StateFlow<GameState?> = _gameState
+
     val elapsedMillis: StateFlow<Long> = timer.elapsedMillis
 
     private val _events = MutableSharedFlow<UiEvent>(replay = 0, extraBufferCapacity = 1)
@@ -85,7 +90,8 @@ class BoardViewModel(
 
             when (val result = solver.setBoardSize(size)) {
                 is Result.Ok -> {
-                    updateState(result.value)
+                    val gs = result.value.copy(boardPhase = BoardPhase.Normal)
+                    updateState(gs)
                     _uiState.value = UiState.Idle
                     emit(UiEvent.BoardReset)
                 }
@@ -128,11 +134,12 @@ class BoardViewModel(
         }
     }
 
-    private fun updateState(gameState: GameState) {
-        _boardSize.value = gameState.size
-        _queens.value = gameState.queens
-        _conflicts.value = gameState.conflicts
-        _gameStatus.value = gameState.status
+    private fun updateState(gs: GameState) {
+        _gameState.value = gs
+        _boardSize.value = gs.size
+        _queens.value = gs.queens
+        _conflicts.value = gs.conflicts
+        _gameStatus.value = gs.status
     }
 
     private fun moveEvent(isPlacing: Boolean, cell: Cell, conflictStarted: Boolean): UiEvent {
@@ -151,5 +158,13 @@ class BoardViewModel(
         _latestRank.value = null
         val size = _boardSize.value ?: return
         applySize(size, force = true)
+    }
+
+    fun enterWinAnimation() {
+        _gameState.update { it?.copy(boardPhase = BoardPhase.WinAnimating) }
+    }
+
+    fun onWinAnimationFinished() {
+        _gameState.update { it?.copy(boardPhase = BoardPhase.WinFrozen) }
     }
 }
