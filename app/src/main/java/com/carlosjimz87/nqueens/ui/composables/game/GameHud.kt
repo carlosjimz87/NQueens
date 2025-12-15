@@ -15,6 +15,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.EmojiEvents
 import androidx.compose.material.icons.outlined.Flag
+import androidx.compose.material.icons.outlined.Leaderboard
 import androidx.compose.material.icons.outlined.Refresh
 import androidx.compose.material.icons.outlined.ReportProblem
 import androidx.compose.material.icons.outlined.Timer
@@ -40,6 +41,7 @@ fun GameHud(
     isLoading: Boolean,
     onChange: () -> Unit,
     onReset: () -> Unit,
+    onStats: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     val cs = MaterialTheme.colorScheme
@@ -96,16 +98,25 @@ fun GameHud(
 
                     Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                         OutlinedButton(
+                            onClick = onStats,
+                            enabled = !isLoading,
+                            shape = RoundedCornerShape(28.dp),
+                            border = BorderStroke(1.dp, cs.primary),
+                            contentPadding = PaddingValues(horizontal = 14.dp, vertical = 10.dp)
+                        ) {
+                            Icon(Icons.Outlined.Leaderboard, contentDescription = "See leaderboard")
+                        }
+                        
+                        OutlinedButton(
                             onClick = onChange,
                             enabled = !isLoading,
                             shape = RoundedCornerShape(28.dp),
                             border = BorderStroke(1.dp, cs.primary),
                             contentPadding = PaddingValues(horizontal = 14.dp, vertical = 10.dp)
                         ) {
-                            Icon(Icons.Outlined.Tune, contentDescription = null)
-                            Spacer(Modifier.width(8.dp))
-                            Text("Change")
+                            Icon(Icons.Outlined.Tune, contentDescription = "Change board size")
                         }
+
 
                         Button(
                             onClick = onReset,
@@ -113,10 +124,9 @@ fun GameHud(
                             shape = RoundedCornerShape(28.dp),
                             contentPadding = PaddingValues(horizontal = 14.dp, vertical = 10.dp)
                         ) {
-                            Icon(Icons.Outlined.Refresh, contentDescription = null)
-                            Spacer(Modifier.width(8.dp))
-                            Text("Reset")
+                            Icon(Icons.Outlined.Refresh, contentDescription = "Reset game")
                         }
+
                     }
                 }
 
