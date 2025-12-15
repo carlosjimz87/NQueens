@@ -2,17 +2,17 @@ package com.carlosjimz87.nqueens.presentation.board.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.carlosjimz87.nqueens.common.Constants
 import com.carlosjimz87.nqueens.presentation.board.event.UiEvent
 import com.carlosjimz87.nqueens.presentation.board.state.UiState
 import com.carlosjimz87.nqueens.presentation.timer.GameTimer
+import com.carlosjimz87.nqueens.store.model.LatestRank
+import com.carlosjimz87.nqueens.store.repo.StatsRepository
 import com.carlosjimz87.rules.either.Result
 import com.carlosjimz87.rules.model.Cell
 import com.carlosjimz87.rules.model.Conflicts
 import com.carlosjimz87.rules.model.GameState
 import com.carlosjimz87.rules.model.GameStatus
 import com.carlosjimz87.rules.solver.NQueensSolver
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
@@ -41,8 +41,13 @@ import kotlinx.coroutines.launch
 class BoardViewModel(
     private val timer: GameTimer,
     private val solver: NQueensSolver,
+    private val statsRepo: StatsRepository,
+    private val initialSize: Int? = null,
 ) : ViewModel() {
 
+    init {
+        initialSize?.let { applySize(it, force = true) }
+    }
     private val _conflicts = MutableStateFlow(Conflicts.Empty)
     val conflicts: StateFlow<Conflicts> = _conflicts
 
@@ -63,34 +68,34 @@ class BoardViewModel(
     private val _events = MutableSharedFlow<UiEvent>(replay = 0, extraBufferCapacity = 1)
     val events: SharedFlow<UiEvent> = _events
 
-    fun onSizeChanged(newSize: Int) {
-        if (_boardSize.value == newSize) return
+    private val _latestRank = MutableStateFlow<LatestRank?>(null)
+    val latestRank: StateFlow<LatestRank?> = _latestRank
+
+    fun leaderboards(size: Int) = statsRepo.leaderboards(size)
+
+    fun onSizeChanged(newSize: Int) = applySize(newSize, force = false)
+
+    private fun applySize(size: Int, force: Boolean) {
+        if (!force && _boardSize.value == size) return
 
         viewModelScope.launch {
             _uiState.value = UiState.Loading
-            delay(150)
 
-            solver.setBoardSize(newSize)
-                .let { result ->
-                    when (result) {
-                        is Result.Ok -> {
-                            timer.reset()
-                            updateState(result.value)
-                            _uiState.value = UiState.Idle
-                            emit(UiEvent.BoardReset)
-                        }
+            timer.reset()
 
-                        is Result.Err -> {
-                            _uiState.value = UiState.InvalidBoard(
-                                message = "Invalid size: $newSize",
-                                error = result.error
-                            )
-                        }
-
-                        else -> {}
-                    }
+            when (val result = solver.setBoardSize(size)) {
+                is Result.Ok -> {
+                    updateState(result.value)
+                    _uiState.value = UiState.Idle
+                    emit(UiEvent.BoardReset)
                 }
-
+                is Result.Err -> {
+                    _uiState.value = UiState.InvalidBoard(
+                        message = "Invalid size: $size",
+                        error = result.error
+                    )
+                }
+            }
         }
     }
 
@@ -106,7 +111,21 @@ class BoardViewModel(
         val conflictOnPlacedCell = isPlacing && state.conflicts.conflictsFor(cell).isNotEmpty()
         emit(moveEvent(isPlacing, cell, conflictOnPlacedCell))
 
-        if (state.status is GameStatus.Solved) timer.stop()
+        if (state.status is GameStatus.Solved) {
+            timer.stop()
+
+            val solved = state.status as GameStatus.Solved
+            val time = elapsedMillis.value
+
+            viewModelScope.launch {
+                val result = statsRepo.record(
+                    size = solved.size,
+                    timeMillis = time,
+                    moves = solved.moves
+                )
+                _latestRank.value = LatestRank(result.rankByTime, result.rankByMoves)
+            }
+        }
     }
 
     private fun updateState(gameState: GameState) {
@@ -129,26 +148,8 @@ class BoardViewModel(
     }
 
     fun resetGame() {
+        _latestRank.value = null
         val size = _boardSize.value ?: return
-
-        viewModelScope.launch {
-            _uiState.value = UiState.Loading
-            delay(150)
-
-            when (val result = solver.setBoardSize(size)) {
-                is Result.Ok -> {
-                    updateState(result.value)
-                    _uiState.value = UiState.Idle
-                    emit(UiEvent.BoardReset)
-                    timer.reset()
-                }
-                is Result.Err -> {
-                    _uiState.value = UiState.InvalidBoard(
-                        message = "Invalid size: $size",
-                        error = result.error
-                    )
-                }
-            }
-        }
+        applySize(size, force = true)
     }
 }

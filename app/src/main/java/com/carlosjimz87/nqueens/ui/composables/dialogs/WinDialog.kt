@@ -3,12 +3,15 @@ package com.carlosjimz87.nqueens.ui.composables.dialogs
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.EmojiEvents
+import androidx.compose.material.icons.outlined.Extension
+import androidx.compose.material.icons.outlined.Leaderboard
 import androidx.compose.material.icons.outlined.Moving
 import androidx.compose.material.icons.outlined.Timer
 import androidx.compose.material3.AssistChip
@@ -17,6 +20,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -34,6 +38,9 @@ import com.carlosjimz87.rules.model.GameStatus
 fun WinDialog(
     solved: GameStatus.Solved,
     elapsedMillis: Long,
+    rankByTime: Int,
+    rankByMoves: Int,
+    onShowStats: () -> Unit,
     onPlayAgain: () -> Unit,
     onNextLevel: () -> Unit,
 ) {
@@ -54,9 +61,12 @@ fun WinDialog(
         dismissEnabled = false,
         onDismiss = {}, // modal
         header = {
-            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            Column(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
                 Text(
-                    text = "You Won !",
+                    text = "You Won!",
                     style = titleStyle,
                     color = cs.primary,
                     modifier = Modifier.fillMaxWidth(),
@@ -65,55 +75,70 @@ fun WinDialog(
 
                 Spacer(Modifier.height(14.dp))
 
-                Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                Column(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalArrangement = Arrangement.spacedBy(10.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
                     AssistChip(
                         onClick = {},
-                        label = {
-                            Text(
-                                "Time ${formatElapsed(elapsedMillis)}",
-                                style = typography.bodyMedium
-                            )
-                        },
+                        label = { Text("Time ${formatElapsed(elapsedMillis)}", style = typography.bodyMedium) },
                         leadingIcon = { Icon(Icons.Outlined.Timer, contentDescription = null) }
                     )
+
                     AssistChip(
                         onClick = {},
                         label = { Text("Queens = ${solved.size}", style = typography.bodyMedium) },
-                        leadingIcon = {
-                            Icon(
-                                Icons.Outlined.EmojiEvents,
-                                contentDescription = null
-                            )
-                        }
+                        leadingIcon = { Icon(Icons.Outlined.Extension, contentDescription = null) } // mejor “pieza”
                     )
+
                     AssistChip(
                         onClick = {},
                         label = { Text("Moves = ${solved.moves}", style = typography.bodyMedium) },
                         leadingIcon = { Icon(Icons.Outlined.Moving, contentDescription = null) }
                     )
+
+                    if (rankByTime > 0 || rankByMoves > 0) {
+                        AssistChip(
+                            onClick = {},
+                            label = {
+                                val timeText = if (rankByTime > 0) "#$rankByTime" else "—"
+                                val movesText = if (rankByMoves > 0) "#$rankByMoves" else "—"
+                                Text("Rank · Time $timeText · Moves $movesText", style = typography.bodyMedium)
+                            },
+                            leadingIcon = { Icon(Icons.Outlined.Leaderboard, contentDescription = null) }
+                        )
+                    }
+
+                    TextButton(onClick = onShowStats) {
+                        Text("View stats", color = cs.primary)
+                    }
                 }
             }
         },
-        body = {
-            // opcional: si no quieres body, deja vacío
-        },
+        body = { },
         footer = {
-            Button(
-                modifier = Modifier
-                    .weight(1f)
-                    .height(52.dp),
-                onClick = onPlayAgain,
-                shape = RoundedCornerShape(28.dp)
-            ) { Text("Play again") }
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                Button(
+                    modifier = Modifier
+                        .weight(1f)
+                        .height(52.dp),
+                    onClick = onPlayAgain,
+                    shape = RoundedCornerShape(28.dp)
+                ) { Text("Play again") }
 
-            OutlinedButton(
-                modifier = Modifier
-                    .weight(1f)
-                    .height(52.dp),
-                onClick = onNextLevel,
-                shape = RoundedCornerShape(28.dp),
-                border = BorderStroke(1.dp, cs.primary)
-            ) { Text("Next level") }
+                OutlinedButton(
+                    modifier = Modifier
+                        .weight(1f)
+                        .height(52.dp),
+                    onClick = onNextLevel,
+                    shape = RoundedCornerShape(28.dp),
+                    border = BorderStroke(1.dp, cs.primary)
+                ) { Text("Next level") }
+            }
         }
     )
 }
@@ -130,6 +155,9 @@ fun WinDialogPreviewLight() {
         WinDialog(
             solved = GameStatus.Solved(size = 6, moves = 18),
             elapsedMillis = 3_000L,
+            rankByTime = 2,
+            rankByMoves = 5,
+            onShowStats = {},
             onPlayAgain = {},
             onNextLevel = {}
         )
@@ -148,6 +176,9 @@ fun WinDialogPreviewDark() {
         WinDialog(
             solved = GameStatus.Solved(size = 8, moves = 42),
             elapsedMillis = 93_000L,
+            rankByTime = 1,
+            rankByMoves = 3,
+            onShowStats = {},
             onPlayAgain = {},
             onNextLevel = {}
         )
@@ -166,6 +197,9 @@ fun WinDialogPreviewLongTime() {
         WinDialog(
             solved = GameStatus.Solved(size = 12, moves = 120),
             elapsedMillis = 3_726_000L,
+            rankByTime = 0,
+            rankByMoves = 0,
+            onShowStats = {},
             onPlayAgain = {},
             onNextLevel = {}
         )
