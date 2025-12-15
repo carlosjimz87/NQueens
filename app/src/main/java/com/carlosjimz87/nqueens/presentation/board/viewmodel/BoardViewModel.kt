@@ -63,10 +63,6 @@ class BoardViewModel(
     private val _events = MutableSharedFlow<UiEvent>(replay = 0, extraBufferCapacity = 1)
     val events: SharedFlow<UiEvent> = _events
 
-    init {
-        onSizeChanged(Constants.DEFAULT_COLUMNS_ROWS)
-    }
-
     fun onSizeChanged(newSize: Int) {
         if (_boardSize.value == newSize) return
 
