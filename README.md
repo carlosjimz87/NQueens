@@ -6,6 +6,22 @@ The app allows users to play, solve, and track their performance across differen
 
 ---
 
+## 🎥 Demo
+
+<p align="center">
+  <a href="https://github.com/carlosjimz87/NQueens/releases/download/gifs/1.gif">
+    <img src="./images/1.gif" width="200" alt="Init"/>
+  </a>
+  <a href="https://github.com/carlosjimz87/NQueens/releases/download/gifs/2.gif">
+    <img src="./images/2.gif" width="200" alt="Conflict Detection"/>
+  </a>
+  <a href="https://github.com/carlosjimz87/NQueens/releases/download/gifs/3.gif">
+    <img src="./images/3.gif" width="200" alt="Win Animation"/>
+  </a>
+</p>
+
+---
+
 ## ✨ Features
 
 - 🧩 Interactive N-Queens board (from 4×4 up to 20×20)
