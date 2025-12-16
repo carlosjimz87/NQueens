@@ -9,6 +9,8 @@ import androidx.compose.material3.Typography
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
+import com.carlosjimz87.nqueens.R
 import androidx.compose.ui.unit.dp
 
 @Composable
@@ -24,7 +26,7 @@ fun InvalidBoard(
         contentAlignment = Alignment.Center
     ) {
         Text(
-            text = "Board not available.\n Try another size",
+            text = stringResource(id = R.string.board_not_available),
             style = typography.titleMedium,
             color = cs.onSurface,
         )

@@ -1,3 +1,45 @@
 <resources>
     <string name="app_name">NQueens</string>
+    <string name="leaderboard">Leaderboard</string>
+    <string name="close">Close</string>
+    <string name="n_equals">N = %1$d</string>
+    <string name="stats_dialog_light">StatsDialog · Light</string>
+    <string name="stats_dialog_dark">StatsDialog · Dark</string>
+    <string name="stats_dialog_empty">StatsDialog · Empty</string>
+    <string name="stats_dialog_stress">StatsDialog · Stress</string>
+    <string name="you_won">You Won!</string>
+    <string name="time">Time %1$s</string>
+    <string name="queens">Queens = %1$d</string>
+    <string name="moves">Moves = %1$d</string>
+    <string name="rank_time_moves">Rank · Time %1$s · Moves %2$s</string>
+    <string name="see_leaderboard">See Leaderboard</string>
+    <string name="play_again">Play again</string>
+    <string name="next_level">Next level</string>
+    <string name="hud_time">Time %1$s</string>
+    <string name="hud_queens_zero">Queens 0/%1$d</string>
+    <string name="hud_queens_placed">Queens %1$d/%2$d</string>
+    <string name="hud_queens_solved">Queens %1$d/%2$d</string>
+    <string name="hud_place_first_queen">Place your first queen</string>
+    <string name="hud_conflicts">Conflicts %1$d</string>
+    <string name="hud_solved_in_moves">Solved in %1$d moves</string>
+    <string name="hud_level">Level %1$d</string>
+    <string name="hud_see_leaderboard">See leaderboard</string>
+    <string name="hud_change_board_size">Change board size</string>
+    <string name="hud_reset_game">Reset game</string>
+    <string name="content_description_queen">Queen</string>
+    <string name="stats_header_rank">#</string>
+    <string name="stats_header_time">Time</string>
+    <string name="stats_header_moves">Moves</string>
+    <string name="stats_no_results">No results yet.</string>
+    <string name="board_size_picker_title">Pick N: %1$d–%2$d</string>
+    <string name="board_size_select">Select board size:</string>
+    <string name="board_size_decrease">Decrease</string>
+    <string name="board_size_increase">Increase</string>
+    <string name="cancel">Cancel</string>
+    <string name="choose_board_size">Choose board size</string>
+    <string name="start">Start</string>
+    <string name="change_board_size">Change board size</string>
+    <string name="apply">Apply</string>
+    <string name="board_not_available">Board not available.\n Try another size</string>
+    <string name="invalid_size">Invalid size: %1$d</string>
 </resources>

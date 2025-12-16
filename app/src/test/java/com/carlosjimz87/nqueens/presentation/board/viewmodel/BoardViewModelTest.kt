@@ -69,7 +69,7 @@ class BoardViewModelTest {
         vm.onCellClicked(Cell(row = 1, col = 1))
         assertEquals(2, vm.queens.value.size)
 
-        vm.onSizeChanged(6)
+        vm.onSizeChanged(6) { "Invalid size: $it" }
 
         advanceUntilIdle()
 
@@ -87,7 +87,7 @@ class BoardViewModelTest {
         vm.onCellClicked(queenCell)
         assertEquals(setOf(queenCell), vm.queens.value)
 
-        vm.onSizeChanged(2)
+        vm.onSizeChanged(2) { "Invalid size: $it" }
 
         advanceUntilIdle()
 
@@ -106,7 +106,7 @@ class BoardViewModelTest {
         val vm = getVm()
         advanceUntilIdle()
 
-        vm.onSizeChanged(22)
+        vm.onSizeChanged(22) { "Invalid size: $it" }
 
         advanceUntilIdle()
 
@@ -130,7 +130,7 @@ class BoardViewModelTest {
         val initialBoardSize = vm.boardSize.value
         val initialUiState = vm.uiState.value
 
-        vm.onSizeChanged(8)
+        vm.onSizeChanged(8) { "Invalid size: $it" }
 
         advanceUntilIdle()
 
@@ -278,7 +278,7 @@ class BoardViewModelTest {
         advanceUntilIdle()
 
         // Change board size
-        vm.onSizeChanged(6)
+        vm.onSizeChanged(6) { "Invalid size: $it" }
         advanceUntilIdle()
 
         assertEquals(6, vm.boardSize.value)
@@ -297,7 +297,7 @@ class BoardViewModelTest {
     fun `placing N queens with zero conflicts moves game to Solved`() = runTest {
         val vm = getVm()
         // Override default size (e.g. 8) and set 4 for this test
-        vm.onSizeChanged(4)
+        vm.onSizeChanged(4) { "Invalid size: $it" }
 
         advanceUntilIdle()
 

@@ -23,6 +23,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.carlosjimz87.nqueens.R
 import com.carlosjimz87.nqueens.ui.theme.BoardDark
@@ -48,7 +49,6 @@ fun Square(
     val glow = remember { Animatable(0f) }
 
     LaunchedEffect(hasQueen) {
-        Log.d("Square", "LaunchedEffect: hasQueen=$hasQueen, showQueen=$showQueen")
         val becameTrue = !prevHasQueen && hasQueen
         if (becameTrue) {
             iconScale.snapTo(1f)
@@ -88,7 +88,7 @@ fun Square(
         if (hasQueen && showQueen) {
             Icon(
                 painter = painterResource(id = R.drawable.wq),
-                contentDescription = "Queen",
+                contentDescription = stringResource(id = R.string.content_description_queen),
                 modifier = Modifier
                     .fillMaxSize(0.7f)
                     .graphicsLayer {

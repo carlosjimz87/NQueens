@@ -38,6 +38,8 @@ import com.carlosjimz87.nqueens.ui.composables.dialogs.WinDialog
 import com.carlosjimz87.rules.model.BoardPhase
 import com.carlosjimz87.rules.model.Cell
 import com.carlosjimz87.rules.model.GameStatus
+import androidx.compose.ui.res.stringResource
+import com.carlosjimz87.nqueens.R
 import org.koin.androidx.compose.koinViewModel
 
 @Composable
@@ -223,30 +225,38 @@ private fun BoardScreenDialogs(
     onOpenStatsDialog: () -> Unit
 ) {
     if (showSetupDialog) {
+        val invalidSizeText = stringResource(id = R.string.invalid_size)
         BoardSizeDialog(
-            title = "Choose board size",
+            title = stringResource(R.string.choose_board_size),
             initial = Constants.DEFAULT_COLUMNS_ROWS,
             min = 4,
             max = 20,
-            confirmText = "Start",
+            confirmText = stringResource(id = R.string.start),
             dismissEnabled = false,
             onDismiss = { },
-            onConfirm = { size -> viewModel.onSizeChanged(size) }
+            onConfirm = { size ->
+                viewModel.onSizeChanged(size) {
+                    invalidSizeText.format(size)
+                }
+            }
         )
     }
 
     // Change Size
     if (showChangeSizeDialog) {
+        val invalidSizeText = stringResource(id = R.string.invalid_size)
         BoardSizeDialog(
-            title = "Change board size",
+            title = stringResource(R.string.change_board_size),
             initial = boardSize ?: Constants.DEFAULT_COLUMNS_ROWS,
             min = 4,
             max = 20,
-            confirmText = "Apply",
+            confirmText = stringResource(id = R.string.apply),
             dismissEnabled = true,
             onDismiss = onDismissChangeSizeDialog,
             onConfirm = { size ->
-                viewModel.onSizeChanged(size)
+                viewModel.onSizeChanged(size) {
+                    invalidSizeText.format(size)
+                }
                 onDismissChangeSizeDialog()
             }
         )
@@ -267,6 +277,7 @@ private fun BoardScreenDialogs(
     // Win
     val solved = gameStatus as? GameStatus.Solved
     if (showWinDialog && solved != null) {
+        val invalidSizeText = stringResource(id = R.string.invalid_size)
         WinDialog(
             solved = solved,
             elapsedMillis = elapsedMillis,
@@ -278,7 +289,9 @@ private fun BoardScreenDialogs(
             },
             onNextLevel = {
                 onDismissWinDialog()
-                viewModel.onSizeChanged(solved.size + 1)
+                viewModel.onSizeChanged(solved.size + 1) {
+                    invalidSizeText.format(solved.size + 1)
+                }
             },
             onShowStats = {
                 onDismissWinDialog()

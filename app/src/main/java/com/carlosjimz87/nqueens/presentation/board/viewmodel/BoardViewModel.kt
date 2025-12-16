@@ -54,7 +54,12 @@ class BoardViewModel(
      * that board size to start the game.
      */
     init {
-        initialSize?.let { applySize(it, force = true) }
+        initialSize?.let {
+            applySize(
+                size = it,
+                force = true,
+                message = { "Invalid size: $it" })
+        }
     }
 
     private val _conflicts = MutableStateFlow(Conflicts.Empty)
@@ -97,7 +102,8 @@ class BoardViewModel(
      *
      * @param newSize The new desired size for the N-Queens board.
      */
-    fun onSizeChanged(newSize: Int) = applySize(newSize, force = false)
+    fun onSizeChanged(newSize: Int, message: (Int) -> String) =
+        applySize(newSize, force = false, message)
 
     /**
      * Applies a new board size, resetting the game state.
@@ -106,7 +112,7 @@ class BoardViewModel(
      * @param force If true, the size will be applied even if it's the same as the current size.
      *              Useful for re-initializing the board.
      */
-    private fun applySize(size: Int, force: Boolean) {
+    private fun applySize(size: Int, force: Boolean, message: (Int) -> String) {
         if (!force && _boardSize.value == size) return
 
         viewModelScope.launch {
@@ -123,7 +129,7 @@ class BoardViewModel(
                 }
                 is Result.Err -> {
                     _uiState.value = UiState.InvalidBoard(
-                        message = "Invalid size: $size",
+                        message = message(size),
                         error = result.error
                     )
                 }
@@ -215,8 +221,10 @@ class BoardViewModel(
      */
     fun resetGame() {
         _latestRank.value = null
+        _gameState.update { it?.copy(boardPhase = BoardPhase.Normal) }
+
         val size = _boardSize.value ?: return
-        applySize(size, force = true)
+        applySize(size = size, force = true) { "Invalid size: $it" }
     }
 
     /**

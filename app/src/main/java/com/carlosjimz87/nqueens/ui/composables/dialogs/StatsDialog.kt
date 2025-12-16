@@ -20,6 +20,8 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
+import com.carlosjimz87.nqueens.R
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.carlosjimz87.nqueens.common.previewLeaderboardsNormal
@@ -48,11 +50,11 @@ fun StatsDialog(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Text("Leaderboard", style = typography.titleLarge, color = cs.onSecondaryContainer)
+                Text(stringResource(R.string.leaderboard), style = typography.titleLarge, color = cs.onSecondaryContainer)
                 Spacer(Modifier.height(10.dp))
                 AssistChip(
                     onClick = {},
-                    label = { Text("N = $size", style = typography.bodyMedium) },
+                    label = { Text(stringResource(R.string.n_equals, size), style = typography.bodyMedium) },
                     leadingIcon = { Icon(Icons.Outlined.GridOn, contentDescription = null) }
                 )
                 Spacer(Modifier.height(10.dp))
@@ -71,7 +73,7 @@ fun StatsDialog(
                     .heightIn(min = 44.dp),
                 onClick = onClose,
                 shape = RoundedCornerShape(28.dp)
-            ) { Text("Close") }
+            ) { Text(stringResource(R.string.close)) }
         }
     )
 }

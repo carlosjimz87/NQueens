@@ -27,6 +27,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Shadow
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.res.stringResource
+import com.carlosjimz87.nqueens.R
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -66,7 +68,7 @@ fun WinDialog(
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Text(
-                    text = "You Won!",
+                    text = stringResource(R.string.you_won),
                     style = titleStyle,
                     color = cs.primary,
                     modifier = Modifier.fillMaxWidth(),
@@ -82,19 +84,19 @@ fun WinDialog(
                 ) {
                     AssistChip(
                         onClick = {},
-                        label = { Text("Time ${formatElapsed(elapsedMillis)}", style = typography.bodyMedium) },
+                        label = { Text(stringResource(R.string.time, formatElapsed(elapsedMillis)), style = typography.bodyMedium) },
                         leadingIcon = { Icon(Icons.Outlined.Timer, contentDescription = null) }
                     )
 
                     AssistChip(
                         onClick = {},
-                        label = { Text("Queens = ${solved.size}", style = typography.bodyMedium) },
+                        label = { Text(stringResource(R.string.queens, solved.size), style = typography.bodyMedium) },
                         leadingIcon = { Icon(Icons.Outlined.EmojiEvents, contentDescription = null) } // mejor “pieza”
                     )
 
                     AssistChip(
                         onClick = {},
-                        label = { Text("Moves = ${solved.moves}", style = typography.bodyMedium) },
+                        label = { Text(stringResource(R.string.moves, solved.moves), style = typography.bodyMedium) },
                         leadingIcon = { Icon(Icons.Outlined.Moving, contentDescription = null) }
                     )
 
@@ -104,14 +106,14 @@ fun WinDialog(
                             label = {
                                 val timeText = if (rankByTime > 0) "#$rankByTime" else "—"
                                 val movesText = if (rankByMoves > 0) "#$rankByMoves" else "—"
-                                Text("Rank · Time $timeText · Moves $movesText", style = typography.bodyMedium)
+                                Text(stringResource(R.string.rank_time_moves, timeText, movesText), style = typography.bodyMedium)
                             },
                             leadingIcon = { Icon(Icons.Outlined.Leaderboard, contentDescription = null) }
                         )
                     }
 
                     TextButton(onClick = onShowStats) {
-                        Text("See Leaderboard", color = cs.primary)
+                        Text(stringResource(R.string.see_leaderboard), color = cs.primary)
                     }
                 }
             }
@@ -128,7 +130,7 @@ fun WinDialog(
                         .height(52.dp),
                     onClick = onPlayAgain,
                     shape = RoundedCornerShape(28.dp)
-                ) { Text("Play again") }
+                ) { Text(stringResource(R.string.play_again)) }
 
                 OutlinedButton(
                     modifier = Modifier
@@ -137,7 +139,7 @@ fun WinDialog(
                     onClick = onNextLevel,
                     shape = RoundedCornerShape(28.dp),
                     border = BorderStroke(1.dp, cs.primary)
-                ) { Text("Next level") }
+                ) { Text(stringResource(R.string.next_level)) }
             }
         }
     )

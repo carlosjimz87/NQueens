@@ -26,6 +26,8 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
+import com.carlosjimz87.nqueens.R
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.carlosjimz87.nqueens.ui.theme.NQueensTheme
@@ -53,12 +55,21 @@ fun BoardSizeDialog(
             Spacer(Modifier.height(10.dp))
             AssistChip(
                 onClick = {},
-                label = { Text("Pick N: $min–$max", style = typography.bodyMedium) },
+                label = {
+                    Text(
+                        stringResource(R.string.board_size_picker_title, min, max),
+                        style = typography.bodyMedium
+                    )
+                },
                 leadingIcon = { Icon(Icons.Outlined.GridOn, contentDescription = null) }
             )
         },
         body = {
-            Text("Select board size:", style = typography.bodyMedium, color = cs.onSurfaceVariant)
+            Text(
+                stringResource(R.string.board_size_select),
+                style = typography.bodyMedium,
+                color = cs.onSurfaceVariant
+            )
             Spacer(Modifier.height(14.dp))
 
             Surface(shape = RoundedCornerShape(28.dp), color = cs.surfaceVariant) {
@@ -70,31 +81,45 @@ fun BoardSizeDialog(
                     IconButton(
                         onClick = { value = (value - 1).coerceAtLeast(min) },
                         enabled = value > min
-                    ) { Icon(Icons.Outlined.Remove, contentDescription = "Decrease") }
+                    ) {
+                        Icon(
+                            Icons.Outlined.Remove,
+                            contentDescription = stringResource(R.string.board_size_decrease)
+                        )
+                    }
 
                     Text(value.toString(), style = typography.headlineMedium, color = cs.primary)
 
                     IconButton(
                         onClick = { value = (value + 1).coerceAtMost(max) },
                         enabled = value < max
-                    ) { Icon(Icons.Outlined.Add, contentDescription = "Increase") }
+                    ) {
+                        Icon(
+                            Icons.Outlined.Add,
+                            contentDescription = stringResource(R.string.board_size_increase)
+                        )
+                    }
                 }
             }
         },
         footer = {
             Button(
-                modifier = Modifier.weight(1f).height(52.dp),
+                modifier = Modifier
+                    .weight(1f)
+                    .height(52.dp),
                 onClick = { onConfirm(value) },
                 shape = RoundedCornerShape(28.dp)
             ) { Text(confirmText) }
 
             if (dismissEnabled) {
                 OutlinedButton(
-                    modifier = Modifier.weight(1f).height(52.dp),
+                    modifier = Modifier
+                        .weight(1f)
+                        .height(52.dp),
                     onClick = onDismiss,
                     shape = RoundedCornerShape(28.dp),
                     border = BorderStroke(1.dp, cs.primary)
-                ) { Text("Cancel") }
+                ) { Text(stringResource(R.string.cancel)) }
             }
         }
     )
@@ -110,11 +135,11 @@ fun BoardSizeDialog(
 fun BoardSizeDialogPreviewSetupLight() {
     NQueensTheme(darkTheme = false) {
         BoardSizeDialog(
-            title = "Choose board size",
+            title = stringResource(R.string.choose_board_size),
             initial = 8,
             min = 4,
             max = 20,
-            confirmText = "Start",
+            confirmText = stringResource(id = R.string.start),
             dismissEnabled = false,
             onDismiss = {},
             onConfirm = {}
@@ -132,11 +157,11 @@ fun BoardSizeDialogPreviewSetupLight() {
 fun BoardSizeDialogPreviewChangeLight() {
     NQueensTheme(darkTheme = false) {
         BoardSizeDialog(
-            title = "Change board size",
+            title = stringResource(R.string.change_board_size),
             initial = 6,
             min = 4,
             max = 20,
-            confirmText = "Apply",
+            confirmText = stringResource(id = R.string.apply),
             dismissEnabled = true,
             onDismiss = {},
             onConfirm = {}
@@ -154,11 +179,11 @@ fun BoardSizeDialogPreviewChangeLight() {
 fun BoardSizeDialogPreviewSetupDark() {
     NQueensTheme(darkTheme = true) {
         BoardSizeDialog(
-            title = "Choose board size",
+            title = stringResource(R.string.choose_board_size),
             initial = 8,
             min = 4,
             max = 20,
-            confirmText = "Start",
+            confirmText = stringResource(id = R.string.start),
             dismissEnabled = false,
             onDismiss = {},
             onConfirm = {}
@@ -176,11 +201,11 @@ fun BoardSizeDialogPreviewSetupDark() {
 fun BoardSizeDialogPreviewMin() {
     NQueensTheme(darkTheme = false) {
         BoardSizeDialog(
-            title = "Choose board size",
+            title = stringResource(R.string.choose_board_size),
             initial = 4,
             min = 4,
             max = 20,
-            confirmText = "Start",
+            confirmText = stringResource(id = R.string.start),
             dismissEnabled = false,
             onDismiss = {},
             onConfirm = {}
@@ -198,11 +223,11 @@ fun BoardSizeDialogPreviewMin() {
 fun BoardSizeDialogPreviewMax() {
     NQueensTheme(darkTheme = false) {
         BoardSizeDialog(
-            title = "Choose board size",
+            title = stringResource(R.string.choose_board_size),
             initial = 20,
             min = 4,
             max = 20,
-            confirmText = "Start",
+            confirmText = stringResource(id = R.string.start),
             dismissEnabled = true,
             onDismiss = {},
             onConfirm = {}

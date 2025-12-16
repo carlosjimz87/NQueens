@@ -18,6 +18,8 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
+import com.carlosjimz87.nqueens.R
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.carlosjimz87.nqueens.common.formatElapsed
@@ -44,15 +46,15 @@ fun StatsTable(
         ) {
             // Header fijo
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                Text("#", style = typography.labelMedium, color = cs.onSurfaceVariant, modifier = Modifier.width(24.dp))
-                Text("Time", style = typography.labelMedium, color = cs.onSurfaceVariant, modifier = Modifier.weight(1f))
-                Text("Moves", style = typography.labelMedium, color = cs.onSurfaceVariant, modifier = Modifier.width(56.dp))
+                Text(stringResource(R.string.stats_header_rank), style = typography.labelMedium, color = cs.onSurfaceVariant, modifier = Modifier.width(24.dp))
+                Text(stringResource(R.string.stats_header_time), style = typography.labelMedium, color = cs.onSurfaceVariant, modifier = Modifier.weight(1f))
+                Text(stringResource(R.string.stats_header_moves), style = typography.labelMedium, color = cs.onSurfaceVariant, modifier = Modifier.width(56.dp))
             }
 
             Spacer(Modifier.height(8.dp))
 
             if (rows.isEmpty()) {
-                Text("No results yet.", color = cs.onSurfaceVariant)
+                Text(stringResource(R.string.stats_no_results), color = cs.onSurfaceVariant)
             } else {
                 LazyColumn(
                     modifier = Modifier
