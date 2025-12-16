@@ -47,13 +47,11 @@ fun GameHud(
     val typography = MaterialTheme.typography
 
     val line1 = "Time ${formatElapsed(elapsedMillis)}"
-
     val line2 = when (status) {
         is GameStatus.NotStarted, null -> "Queens 0/$size"
         is GameStatus.InProgress -> "Queens ${status.queensPlaced}/$size"
         is GameStatus.Solved -> "Queens $size/$size"
     }
-
     val line3 = when (status) {
         is GameStatus.NotStarted, null -> "Place your first queen"
         is GameStatus.InProgress -> "Conflicts ${status.conflicts}"
@@ -61,7 +59,6 @@ fun GameHud(
     }
 
     val icon2 = Icons.Outlined.EmojiEvents
-
     val icon3 = when (status) {
         is GameStatus.InProgress -> Icons.Outlined.ReportProblem
         else -> Icons.Outlined.Flag
@@ -70,72 +67,57 @@ fun GameHud(
     Surface(
         modifier = modifier,
         shape = RoundedCornerShape(24.dp),
-        tonalElevation = 4.dp,
-        shadowElevation = 6.dp,
         color = cs.surface
     ) {
-        Column(modifier = Modifier.fillMaxWidth()) {
-
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .background(cs.secondaryContainer)
-                    .padding(horizontal = 20.dp, vertical = 18.dp)
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(cs.secondaryContainer)
+                .padding(horizontal = 20.dp, vertical = 12.dp)
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Column {
-                        Text(
-                            text = "Level $size",
-                            style = typography.titleLarge,
-                            color = cs.onSecondaryContainer
-                        )
-                    }
+                Text(
+                    text = "Level $size",
+                    style = typography.titleLarge,
+                    color = cs.onSecondaryContainer
+                )
 
-                    Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                        OutlinedButton(
-                            onClick = onStats,
-                            enabled = !isLoading,
-                            shape = RoundedCornerShape(28.dp),
-                            border = BorderStroke(1.dp, cs.primary),
-                            contentPadding = PaddingValues(horizontal = 14.dp, vertical = 10.dp)
-                        ) {
-                            Icon(Icons.Outlined.Leaderboard, contentDescription = "See leaderboard")
-                        }
-                        
-                        OutlinedButton(
-                            onClick = onChange,
-                            enabled = !isLoading,
-                            shape = RoundedCornerShape(28.dp),
-                            border = BorderStroke(1.dp, cs.primary),
-                            contentPadding = PaddingValues(horizontal = 14.dp, vertical = 10.dp)
-                        ) {
-                            Icon(Icons.Outlined.Tune, contentDescription = "Change board size")
-                        }
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    OutlinedButton(
+                        onClick = onStats,
+                        enabled = !isLoading,
+                        shape = RoundedCornerShape(28.dp),
+                        border = BorderStroke(1.dp, cs.primary),
+                        contentPadding = PaddingValues(horizontal = 14.dp, vertical = 10.dp)
+                    ) { Icon(Icons.Outlined.Leaderboard, contentDescription = "See leaderboard") }
 
+                    OutlinedButton(
+                        onClick = onChange,
+                        enabled = !isLoading,
+                        shape = RoundedCornerShape(28.dp),
+                        border = BorderStroke(1.dp, cs.primary),
+                        contentPadding = PaddingValues(horizontal = 14.dp, vertical = 10.dp)
+                    ) { Icon(Icons.Outlined.Tune, contentDescription = "Change board size") }
 
-                        Button(
-                            onClick = onReset,
-                            enabled = !isLoading,
-                            shape = RoundedCornerShape(28.dp),
-                            contentPadding = PaddingValues(horizontal = 14.dp, vertical = 10.dp)
-                        ) {
-                            Icon(Icons.Outlined.Refresh, contentDescription = "Reset game")
-                        }
-
-                    }
+                    Button(
+                        onClick = onReset,
+                        enabled = !isLoading,
+                        shape = RoundedCornerShape(28.dp),
+                        contentPadding = PaddingValues(horizontal = 14.dp, vertical = 10.dp)
+                    ) { Icon(Icons.Outlined.Refresh, contentDescription = "Reset game") }
                 }
+            }
 
-                Spacer(Modifier.height(14.dp))
+            Spacer(Modifier.height(14.dp))
 
-                Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                    HudChip(Icons.Outlined.Timer, line1)
-                    HudChip(icon2, line2)
-                    HudChip(icon3, line3)
-                }
+            Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                HudChip(Icons.Outlined.Timer, line1)
+                HudChip(icon2, line2)
+                HudChip(icon3, line3)
             }
         }
     }

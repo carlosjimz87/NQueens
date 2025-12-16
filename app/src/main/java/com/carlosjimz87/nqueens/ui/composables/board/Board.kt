@@ -1,10 +1,13 @@
 package com.carlosjimz87.nqueens.ui.composables.board
 
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.layout.size
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.min
 import com.carlosjimz87.nqueens.ui.composables.conflicts.ConflictLines
 import com.carlosjimz87.nqueens.ui.composables.squares.SquaresAndQueens
 import com.carlosjimz87.rules.model.Cell
@@ -19,24 +22,27 @@ fun Board(
     showQueens: Boolean,
     modifier: Modifier = Modifier,
 ) {
-    val cs = MaterialTheme.colorScheme
+    BoxWithConstraints(
+        modifier = modifier,
+        contentAlignment = Alignment.Center
+    ) {
+        val side = min(maxWidth, maxHeight)
 
-    Box(modifier.aspectRatio(1f)) {
-
-        SquaresAndQueens(
-            size = size,
-            queens = queens,
-            onCellClick = onCellClick,
-            conflicts = conflicts,
-            showQueens = showQueens
-        )
-
-        ConflictLines(
-            size = size,
-            conflicts = conflicts,
-            color = cs.error.copy(alpha = 0.65f),
-            strokePx = 3f,
-            modifier = Modifier.matchParentSize()
-        )
+        Box(Modifier.size(side)) {
+            SquaresAndQueens(
+                size = size,
+                queens = queens,
+                onCellClick = onCellClick,
+                conflicts = conflicts,
+                showQueens = showQueens
+            )
+            ConflictLines(
+                size = size,
+                conflicts = conflicts,
+                color = MaterialTheme.colorScheme.error.copy(alpha = 0.65f),
+                strokePx = 3f,
+                modifier = Modifier.matchParentSize()
+            )
+        }
     }
 }

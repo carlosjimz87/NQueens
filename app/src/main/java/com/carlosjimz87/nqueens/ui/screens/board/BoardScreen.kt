@@ -1,8 +1,7 @@
 package com.carlosjimz87.nqueens.ui.screens.board
 
-import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -23,7 +22,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.unit.dp
 import com.carlosjimz87.nqueens.common.Constants
 import com.carlosjimz87.nqueens.presentation.audio.AndroidSoundEffectPlayer
 import com.carlosjimz87.nqueens.presentation.board.event.UiEvent
@@ -31,14 +29,12 @@ import com.carlosjimz87.nqueens.presentation.board.state.UiState
 import com.carlosjimz87.nqueens.presentation.board.viewmodel.BoardViewModel
 import com.carlosjimz87.nqueens.store.model.LatestRank
 import com.carlosjimz87.nqueens.store.model.Leaderboards
-import com.carlosjimz87.nqueens.ui.composables.board.Board
-import com.carlosjimz87.nqueens.ui.composables.board.BoardContainer
+import com.carlosjimz87.nqueens.ui.composables.board.BoardAdaptative
 import com.carlosjimz87.nqueens.ui.composables.board.InvalidBoard
 import com.carlosjimz87.nqueens.ui.composables.board.WinAnimation
 import com.carlosjimz87.nqueens.ui.composables.dialogs.BoardSizeDialog
 import com.carlosjimz87.nqueens.ui.composables.dialogs.StatsDialog
 import com.carlosjimz87.nqueens.ui.composables.dialogs.WinDialog
-import com.carlosjimz87.nqueens.ui.composables.hud.GameHud
 import com.carlosjimz87.rules.model.BoardPhase
 import com.carlosjimz87.rules.model.Cell
 import com.carlosjimz87.rules.model.GameStatus
@@ -49,6 +45,8 @@ fun BoardScreen(
     modifier: Modifier = Modifier,
     viewModel: BoardViewModel = koinViewModel()
 ) {
+    val cs = MaterialTheme.colorScheme
+
     // --- State Collection ---
     val boardSize by viewModel.boardSize.collectAsState()
     val uiState by viewModel.uiState.collectAsState()
@@ -59,6 +57,7 @@ fun BoardScreen(
     val latestRank by viewModel.latestRank.collectAsState()
     val gs by viewModel.gameState.collectAsState()
     val phase = gs?.boardPhase ?: BoardPhase.Normal
+
     var solvedQueens by rememberSaveable { mutableStateOf<List<Cell>>(emptyList()) }
 
     // --- Local UI State ---
@@ -66,8 +65,9 @@ fun BoardScreen(
     var showChangeSizeDialog by rememberSaveable { mutableStateOf(false) }
     var showStatsDialog by rememberSaveable { mutableStateOf(false) }
     var winAnimToken by rememberSaveable { mutableIntStateOf(0) }
+
     val animatingWin = phase == BoardPhase.WinAnimating
-    var showWinDialog = phase == BoardPhase.WinFrozen
+    val showWinDialog = phase == BoardPhase.WinFrozen
     val showQueens = phase == BoardPhase.Normal
     val allowClicks = phase == BoardPhase.Normal
 
@@ -100,10 +100,9 @@ fun BoardScreen(
 
         onDismissChangeSizeDialog = { showChangeSizeDialog = false },
         onDismissStatsDialog = { showStatsDialog = false },
-        onDismissWinDialog = { showWinDialog = false },
+        onDismissWinDialog = { /* lo controla boardPhase */ },
 
         onOpenStatsDialog = { showStatsDialog = true }
-
     )
 
     // --- UI Layout ---
@@ -111,64 +110,60 @@ fun BoardScreen(
         modifier = modifier.fillMaxSize(),
         snackbarHost = { SnackbarHost(snackbarHostState) }
     ) { innerPadding ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(innerPadding)
-                .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp),
-        ) {
-            val isLoading = uiState is UiState.Loading
 
-            boardSize?.let { size ->
-                GameHud(
-                    size = size,
-                    status = gameStatus,
-                    elapsedMillis = elapsedMillis,
-                    isLoading = isLoading,
-                    onChange = { showChangeSizeDialog = true },
-                    onReset = viewModel::resetGame,
-                    onStats = { showStatsDialog = true },
-                    modifier = Modifier.fillMaxWidth()
-                )
-            }
+        val isLoading = uiState is UiState.Loading
 
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .weight(1f),
+        when {
+            isLoading -> Box(
+                Modifier
+                    .fillMaxSize()
+                    .background(cs.surface)
+                    .padding(innerPadding),
                 contentAlignment = Alignment.Center
             ) {
-                when {
-                    isLoading -> CircularProgressIndicator()
+                CircularProgressIndicator()
+            }
 
-                    boardSize != null -> BoardContainer(Modifier.fillMaxSize()) {
-                        Board(
-                            size = boardSize!!,
-                            queens = queens,
-                            conflicts = conflicts,
-                            onCellClick = { if (allowClicks) viewModel.onCellClicked(it) },
-                            showQueens = showQueens,
-                            modifier = Modifier.fillMaxSize()
-                        )
-
-                        WinAnimation(
-                            token = winAnimToken,
-                            size = boardSize!!,
-                            queens = solvedQueens,
-                            enabled = animatingWin,
-                            onFinished = {
-                                viewModel.onWinAnimationFinished()
-                            }
-                        )
-                    }
-
-                    else -> InvalidBoard(
-                        modifier = Modifier.fillMaxWidth(),
-                        typography = MaterialTheme.typography,
-                        cs = MaterialTheme.colorScheme
+            boardSize != null -> BoardAdaptative(
+                boardSize = boardSize!!,
+                uiState = uiState,
+                queens = queens,
+                conflicts = conflicts,
+                gameStatus = gameStatus,
+                elapsedMillis = elapsedMillis,
+                allowClicks = allowClicks,
+                showQueens = showQueens,
+                onCellClick = { cell -> if (allowClicks) viewModel.onCellClicked(cell) },
+                onChange = { showChangeSizeDialog = true },
+                onReset = viewModel::resetGame,
+                onStats = { showStatsDialog = true },
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(cs.surface)
+                    .padding(innerPadding),
+                winOverlay = {
+                    WinAnimation(
+                        token = winAnimToken,
+                        size = boardSize!!,
+                        queens = solvedQueens,
+                        enabled = animatingWin,
+                        onFinished = { viewModel.onWinAnimationFinished() }
                     )
                 }
+            )
+
+            else -> Box(
+                Modifier
+                    .fillMaxSize()
+                    .background(cs.surface)
+                    .padding(innerPadding),
+                contentAlignment = Alignment.Center
+            ) {
+                InvalidBoard(
+                    modifier = Modifier.fillMaxWidth(),
+                    typography = MaterialTheme.typography,
+                    cs = cs
+                )
             }
         }
     }

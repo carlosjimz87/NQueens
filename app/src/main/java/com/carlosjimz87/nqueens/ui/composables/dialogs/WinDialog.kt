@@ -111,7 +111,7 @@ fun WinDialog(
                     }
 
                     TextButton(onClick = onShowStats) {
-                        Text("View stats", color = cs.primary)
+                        Text("See Leaderboard", color = cs.primary)
                     }
                 }
             }
