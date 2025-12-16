@@ -1,12 +1,12 @@
-package com.carlosjimz87.nqueens.store.manager
+package com.carlosjimz87.nqueens.data.sources
 
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.PreferenceDataStoreFactory
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
-import com.carlosjimz87.nqueens.store.model.ScoreEntry
-import com.carlosjimz87.nqueens.store.model.StatsState
+import com.carlosjimz87.nqueens.data.model.ScoreEntry
+import com.carlosjimz87.nqueens.data.model.StatsState
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.TestScope

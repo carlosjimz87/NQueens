@@ -3,11 +3,11 @@ package com.carlosjimz87.nqueens.di
 import com.carlosjimz87.nqueens.presentation.board.viewmodel.BoardViewModel
 import com.carlosjimz87.nqueens.presentation.timer.FakeGameTimer
 import com.carlosjimz87.nqueens.presentation.timer.GameTimer
-import com.carlosjimz87.nqueens.store.manager.FakeStoreManager
-import com.carlosjimz87.nqueens.store.manager.StoreManager
-import com.carlosjimz87.nqueens.store.model.StatsState
-import com.carlosjimz87.nqueens.store.repo.StatsRepository
-import com.carlosjimz87.nqueens.store.repo.StatsRepositoryImpl
+import com.carlosjimz87.nqueens.data.sources.FakeStoreManager
+import com.carlosjimz87.nqueens.data.sources.StoreManager
+import com.carlosjimz87.nqueens.data.model.StatsState
+import com.carlosjimz87.nqueens.data.repo.StatsRepository
+import com.carlosjimz87.nqueens.data.repo.StatsRepositoryImpl
 import com.carlosjimz87.rules.solver.NQueensSolver
 import com.carlosjimz87.rules.solver.NQueensSolverImpl
 import org.koin.androidx.viewmodel.dsl.viewModel

@@ -42,4 +42,6 @@
     <string name="apply">Apply</string>
     <string name="board_not_available">Board not available.\n Try another size</string>
     <string name="invalid_size">Invalid size: %1$d</string>
+    <string name="board_too_small">Size is too small: %1$d</string>
+    <string name="board_too_big">Size is too big: %1$d</string>
 </resources>

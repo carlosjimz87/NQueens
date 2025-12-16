@@ -1,4 +1,4 @@
-package com.carlosjimz87.nqueens.store.manager
+package com.carlosjimz87.nqueens.data.sources
 
 import android.content.Context
 import androidx.datastore.core.DataStore

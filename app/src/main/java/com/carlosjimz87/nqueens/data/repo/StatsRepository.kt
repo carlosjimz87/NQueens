@@ -1,8 +1,8 @@
-package com.carlosjimz87.nqueens.store.repo
+package com.carlosjimz87.nqueens.data.repo
 
-import com.carlosjimz87.nqueens.store.model.Leaderboards
-import com.carlosjimz87.nqueens.store.model.RecordResult
-import com.carlosjimz87.nqueens.store.model.StatsState
+import com.carlosjimz87.nqueens.data.model.Leaderboards
+import com.carlosjimz87.nqueens.data.model.RecordResult
+import com.carlosjimz87.nqueens.data.model.StatsState
 import kotlinx.coroutines.flow.Flow
 
 /**

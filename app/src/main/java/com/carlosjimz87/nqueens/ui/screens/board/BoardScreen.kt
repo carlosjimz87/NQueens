@@ -27,19 +27,20 @@ import com.carlosjimz87.nqueens.presentation.audio.AndroidSoundEffectPlayer
 import com.carlosjimz87.nqueens.presentation.board.event.UiEvent
 import com.carlosjimz87.nqueens.presentation.board.state.UiState
 import com.carlosjimz87.nqueens.presentation.board.viewmodel.BoardViewModel
-import com.carlosjimz87.nqueens.store.model.LatestRank
-import com.carlosjimz87.nqueens.store.model.Leaderboards
+import com.carlosjimz87.nqueens.data.model.LatestRank
+import com.carlosjimz87.nqueens.data.model.Leaderboards
 import com.carlosjimz87.nqueens.ui.composables.board.BoardAdaptative
 import com.carlosjimz87.nqueens.ui.composables.board.InvalidBoard
 import com.carlosjimz87.nqueens.ui.composables.board.WinAnimation
 import com.carlosjimz87.nqueens.ui.composables.dialogs.BoardSizeDialog
 import com.carlosjimz87.nqueens.ui.composables.dialogs.StatsDialog
 import com.carlosjimz87.nqueens.ui.composables.dialogs.WinDialog
-import com.carlosjimz87.rules.model.BoardPhase
 import com.carlosjimz87.rules.model.Cell
 import com.carlosjimz87.rules.model.GameStatus
 import androidx.compose.ui.res.stringResource
 import com.carlosjimz87.nqueens.R
+import com.carlosjimz87.nqueens.presentation.board.model.BoardPhase
+import com.carlosjimz87.rules.model.BoardError
 import org.koin.androidx.compose.koinViewModel
 
 @Composable
@@ -57,8 +58,7 @@ fun BoardScreen(
     val gameStatus by viewModel.gameStatus.collectAsState()
     val elapsedMillis by viewModel.elapsedMillis.collectAsState()
     val latestRank by viewModel.latestRank.collectAsState()
-    val gs by viewModel.gameState.collectAsState()
-    val phase = gs?.boardPhase ?: BoardPhase.Normal
+    val phase by viewModel.boardPhase.collectAsState()
 
     var solvedQueens by rememberSaveable { mutableStateOf<List<Cell>>(emptyList()) }
 
@@ -80,6 +80,7 @@ fun BoardScreen(
         viewModel = viewModel,
         snackbarHostState = snackbarHostState,
         soundPlayer = soundPlayer,
+        queens = queens,
         onSolved = {
             solvedQueens = queens.toList()
             winAnimToken++
@@ -94,16 +95,13 @@ fun BoardScreen(
         gameStatus = gameStatus,
         elapsedMillis = elapsedMillis,
         latestRank = latestRank,
-
         showSetupDialog = boardSize == null,
         showChangeSizeDialog = showChangeSizeDialog,
         showStatsDialog = showStatsDialog,
         showWinDialog = showWinDialog,
-
         onDismissChangeSizeDialog = { showChangeSizeDialog = false },
         onDismissStatsDialog = { showStatsDialog = false },
         onDismissWinDialog = { /* lo controla boardPhase */ },
-
         onOpenStatsDialog = { showStatsDialog = true }
     )
 
@@ -176,14 +174,27 @@ private fun BoardScreenEffects(
     viewModel: BoardViewModel,
     snackbarHostState: SnackbarHostState,
     soundPlayer: AndroidSoundEffectPlayer,
+    queens: Set<Cell>,
     onSolved: () -> Unit
 ) {
+    val msgTooSmall = stringResource(R.string.board_too_small)
+    val msgTooBig = stringResource(R.string.board_too_big)
+
+    // ✅ invalid board size messages
     LaunchedEffect(viewModel, snackbarHostState) {
         viewModel.uiState.collect { state ->
-            if (state is UiState.InvalidBoard) snackbarHostState.showSnackbar(state.message)
+            if (state is UiState.InvalidBoard) {
+                val msg = when (state.error) {
+                    BoardError.SizeTooSmall -> msgTooSmall
+                    BoardError.SizeTooBig -> msgTooBig
+                    else -> null
+                }
+                if (msg != null) snackbarHostState.showSnackbar(msg)
+            }
         }
     }
 
+    // ✅ sounds (one-shot events)
     LaunchedEffect(viewModel, soundPlayer) {
         viewModel.events.collect { event ->
             when (event) {
@@ -195,6 +206,7 @@ private fun BoardScreenEffects(
         }
     }
 
+    // ✅ solved detection: only when status changes to Solved
     LaunchedEffect(viewModel, soundPlayer) {
         var prevSolved = false
         viewModel.gameStatus.collect { status ->
@@ -225,7 +237,6 @@ private fun BoardScreenDialogs(
     onOpenStatsDialog: () -> Unit
 ) {
     if (showSetupDialog) {
-        val invalidSizeText = stringResource(id = R.string.invalid_size)
         BoardSizeDialog(
             title = stringResource(R.string.choose_board_size),
             initial = Constants.DEFAULT_COLUMNS_ROWS,
@@ -235,16 +246,12 @@ private fun BoardScreenDialogs(
             dismissEnabled = false,
             onDismiss = { },
             onConfirm = { size ->
-                viewModel.onSizeChanged(size) {
-                    invalidSizeText.format(size)
-                }
+                viewModel.onSizeChanged(size)
             }
         )
     }
 
-    // Change Size
     if (showChangeSizeDialog) {
-        val invalidSizeText = stringResource(id = R.string.invalid_size)
         BoardSizeDialog(
             title = stringResource(R.string.change_board_size),
             initial = boardSize ?: Constants.DEFAULT_COLUMNS_ROWS,
@@ -254,15 +261,12 @@ private fun BoardScreenDialogs(
             dismissEnabled = true,
             onDismiss = onDismissChangeSizeDialog,
             onConfirm = { size ->
-                viewModel.onSizeChanged(size) {
-                    invalidSizeText.format(size)
-                }
+                viewModel.onSizeChanged(size)
                 onDismissChangeSizeDialog()
             }
         )
     }
 
-    // Stats
     if (showStatsDialog && boardSize != null) {
         val lb by viewModel.leaderboards(boardSize).collectAsState(
             initial = Leaderboards(emptyList(), emptyList())
@@ -274,10 +278,8 @@ private fun BoardScreenDialogs(
         )
     }
 
-    // Win
     val solved = gameStatus as? GameStatus.Solved
     if (showWinDialog && solved != null) {
-        val invalidSizeText = stringResource(id = R.string.invalid_size)
         WinDialog(
             solved = solved,
             elapsedMillis = elapsedMillis,
@@ -289,9 +291,7 @@ private fun BoardScreenDialogs(
             },
             onNextLevel = {
                 onDismissWinDialog()
-                viewModel.onSizeChanged(solved.size + 1) {
-                    invalidSizeText.format(solved.size + 1)
-                }
+                viewModel.onSizeChanged(solved.size + 1)
             },
             onShowStats = {
                 onDismissWinDialog()

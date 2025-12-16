@@ -3,9 +3,9 @@ package com.carlosjimz87.nqueens.presentation.board.viewmodel
 import com.carlosjimz87.nqueens.MainDispatcherRule
 import com.carlosjimz87.nqueens.di.testModule
 import com.carlosjimz87.nqueens.presentation.board.event.UiEvent
+import com.carlosjimz87.nqueens.presentation.board.model.BoardPhase
 import com.carlosjimz87.nqueens.presentation.board.state.UiState
 import com.carlosjimz87.rules.model.BoardError
-import com.carlosjimz87.rules.model.BoardPhase
 import com.carlosjimz87.rules.model.Cell
 import com.carlosjimz87.rules.model.GameStatus
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -64,13 +64,11 @@ class BoardViewModelTest {
         val vm = getVm()
         advanceUntilIdle()
 
-        // add some queens before size change
         vm.onCellClicked(Cell(row = 0, col = 0))
         vm.onCellClicked(Cell(row = 1, col = 1))
         assertEquals(2, vm.queens.value.size)
 
-        vm.onSizeChanged(6) { "Invalid size: $it" }
-
+        vm.onSizeChanged(6)
         advanceUntilIdle()
 
         assertEquals(6, vm.boardSize.value)
@@ -87,12 +85,10 @@ class BoardViewModelTest {
         vm.onCellClicked(queenCell)
         assertEquals(setOf(queenCell), vm.queens.value)
 
-        vm.onSizeChanged(2) { "Invalid size: $it" }
-
+        vm.onSizeChanged(2)
         advanceUntilIdle()
 
         assertEquals(8, vm.boardSize.value)
-
         assertEquals(setOf(queenCell), vm.queens.value)
 
         val state = vm.uiState.value
@@ -106,8 +102,7 @@ class BoardViewModelTest {
         val vm = getVm()
         advanceUntilIdle()
 
-        vm.onSizeChanged(22) { "Invalid size: $it" }
-
+        vm.onSizeChanged(22)
         advanceUntilIdle()
 
         assertEquals(8, vm.boardSize.value)
@@ -130,8 +125,7 @@ class BoardViewModelTest {
         val initialBoardSize = vm.boardSize.value
         val initialUiState = vm.uiState.value
 
-        vm.onSizeChanged(8) { "Invalid size: $it" }
-
+        vm.onSizeChanged(8)
         advanceUntilIdle()
 
         assertEquals(initialBoardSize, vm.boardSize.value)
@@ -145,7 +139,6 @@ class BoardViewModelTest {
         advanceUntilIdle()
 
         val cell = Cell(row = 3, col = 4)
-
         vm.onCellClicked(cell)
 
         assertTrue(cell in vm.queens.value)
@@ -158,7 +151,6 @@ class BoardViewModelTest {
         advanceUntilIdle()
 
         val cell = Cell(row = 3, col = 4)
-
         vm.onCellClicked(cell)  // add
         vm.onCellClicked(cell)  // remove
 
@@ -197,9 +189,7 @@ class BoardViewModelTest {
 
         val events = mutableListOf<UiEvent>()
         val job = launch {
-            vm.events.collect { event ->
-                events.add(event)
-            }
+            vm.events.collect { events.add(it) }
         }
 
         vm.onCellClicked(cell)
@@ -225,7 +215,6 @@ class BoardViewModelTest {
         status as GameStatus.NotStarted
         assertEquals(8, status.size)
 
-        // Timer starts at zero
         assertEquals(0L, vm.elapsedMillis.value)
     }
 
@@ -234,9 +223,7 @@ class BoardViewModelTest {
         val vm = getVm()
         advanceUntilIdle()
 
-        val cell = Cell(row = 0, col = 0)
-
-        vm.onCellClicked(cell)
+        vm.onCellClicked(Cell(row = 0, col = 0))
         advanceUntilIdle()
 
         val status = vm.gameStatus.value
@@ -245,7 +232,6 @@ class BoardViewModelTest {
 
         assertEquals(8, status.size)
         assertEquals(1, status.queensPlaced)
-        // We do not assert elapsedMillis here to avoid flakiness
     }
 
     @Test
@@ -272,13 +258,11 @@ class BoardViewModelTest {
     @Test
     fun `changing to a new valid size resets queens moves and timer and sets NotStarted`() = runTest {
         val vm = getVm()
-        // Place some queens to simulate a game in progress
         vm.onCellClicked(Cell(row = 0, col = 0))
         vm.onCellClicked(Cell(row = 1, col = 1))
         advanceUntilIdle()
 
-        // Change board size
-        vm.onSizeChanged(6) { "Invalid size: $it" }
+        vm.onSizeChanged(6)
         advanceUntilIdle()
 
         assertEquals(6, vm.boardSize.value)
@@ -289,24 +273,19 @@ class BoardViewModelTest {
         assertEquals(6, status.size)
 
         assertTrue(vm.queens.value.isEmpty())
-        // Timer must be reset on size change
         assertEquals(0L, vm.elapsedMillis.value)
     }
 
     @Test
     fun `placing N queens with zero conflicts moves game to Solved`() = runTest {
         val vm = getVm()
-        // Override default size (e.g. 8) and set 4 for this test
-        vm.onSizeChanged(4) { "Invalid size: $it" }
-
+        vm.onSizeChanged(4)
         advanceUntilIdle()
 
-        // For a 4x4 board, a valid solution is (0,1), (1,3), (2,0), (3,2)
         vm.onCellClicked(Cell(row = 0, col = 1))
         vm.onCellClicked(Cell(row = 1, col = 3))
         vm.onCellClicked(Cell(row = 2, col = 0))
         vm.onCellClicked(Cell(row = 3, col = 2))
-
         advanceUntilIdle()
 
         val status = vm.gameStatus.value
@@ -322,21 +301,16 @@ class BoardViewModelTest {
         val vm = getVm()
         advanceUntilIdle()
 
-        // put phase in non-normal + fake rank
         vm.enterWinAnimation()
         advanceUntilIdle()
-        assertEquals(BoardPhase.WinAnimating, vm.gameState.value?.boardPhase)
+        assertEquals(BoardPhase.WinAnimating, vm.boardPhase.value) // ✅
 
-        // also: latestRank should be cleared by resetGame
-        // easiest is to simulate it by directly finishing a game, but that’s heavy.
-        // so we just set it by reflection? better: call resetGame and check null anyway.
-        // assuming latestRank is null now; we at least assert it stays null.
         vm.resetGame()
         advanceUntilIdle()
 
         assertEquals(8, vm.boardSize.value)
         assertTrue(vm.uiState.value is UiState.Idle)
-        assertEquals(BoardPhase.Normal, vm.gameState.value?.boardPhase)
+        assertEquals(BoardPhase.Normal, vm.boardPhase.value) // ✅
         assertNull(vm.latestRank.value)
         assertEquals(0L, vm.elapsedMillis.value)
         assertTrue(vm.queens.value.isEmpty())
@@ -347,12 +321,12 @@ class BoardViewModelTest {
         val vm = getVm()
         advanceUntilIdle()
 
-        assertEquals(BoardPhase.Normal, vm.gameState.value?.boardPhase)
+        assertEquals(BoardPhase.Normal, vm.boardPhase.value) // ✅
 
         vm.enterWinAnimation()
         advanceUntilIdle()
 
-        assertEquals(BoardPhase.WinAnimating, vm.gameState.value?.boardPhase)
+        assertEquals(BoardPhase.WinAnimating, vm.boardPhase.value) // ✅
     }
 
     @Test
@@ -362,11 +336,11 @@ class BoardViewModelTest {
 
         vm.enterWinAnimation()
         advanceUntilIdle()
-        assertEquals(BoardPhase.WinAnimating, vm.gameState.value?.boardPhase)
+        assertEquals(BoardPhase.WinAnimating, vm.boardPhase.value) // ✅
 
         vm.onWinAnimationFinished()
         advanceUntilIdle()
 
-        assertEquals(BoardPhase.WinFrozen, vm.gameState.value?.boardPhase)
+        assertEquals(BoardPhase.WinFrozen, vm.boardPhase.value) // ✅
     }
 }

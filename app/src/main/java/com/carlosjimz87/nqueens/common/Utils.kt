@@ -1,7 +1,7 @@
 package com.carlosjimz87.nqueens.common
 
-import com.carlosjimz87.nqueens.store.model.Leaderboards
-import com.carlosjimz87.nqueens.store.model.ScoreEntry
+import com.carlosjimz87.nqueens.data.model.Leaderboards
+import com.carlosjimz87.nqueens.data.model.ScoreEntry
 
 fun formatElapsed(millis: Long): String {
     val totalSeconds = millis / 1000

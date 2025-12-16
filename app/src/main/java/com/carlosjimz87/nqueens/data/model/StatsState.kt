@@ -1,4 +1,4 @@
-package com.carlosjimz87.nqueens.store.model
+package com.carlosjimz87.nqueens.data.model
 
 import kotlinx.serialization.Serializable
 

@@ -1,4 +1,4 @@
-package com.carlosjimz87.rules.model
+package com.carlosjimz87.nqueens.presentation.board.model
 
 enum class BoardPhase {
     Normal,

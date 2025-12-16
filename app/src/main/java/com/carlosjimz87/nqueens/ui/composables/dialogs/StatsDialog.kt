@@ -26,7 +26,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.carlosjimz87.nqueens.common.previewLeaderboardsNormal
 import com.carlosjimz87.nqueens.common.previewLeaderboardsStress
-import com.carlosjimz87.nqueens.store.model.Leaderboards
+import com.carlosjimz87.nqueens.data.model.Leaderboards
 import com.carlosjimz87.nqueens.ui.composables.stats.StatsTable
 import com.carlosjimz87.nqueens.ui.theme.NQueensTheme
 

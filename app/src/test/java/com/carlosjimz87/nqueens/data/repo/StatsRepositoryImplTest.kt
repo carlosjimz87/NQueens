@@ -1,8 +1,8 @@
-package com.carlosjimz87.nqueens.store.repo
+package com.carlosjimz87.nqueens.data.repo
 
-import com.carlosjimz87.nqueens.store.manager.FakeStoreManager
-import com.carlosjimz87.nqueens.store.model.ScoreEntry
-import com.carlosjimz87.nqueens.store.model.StatsState
+import com.carlosjimz87.nqueens.data.sources.FakeStoreManager
+import com.carlosjimz87.nqueens.data.model.ScoreEntry
+import com.carlosjimz87.nqueens.data.model.StatsState
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest

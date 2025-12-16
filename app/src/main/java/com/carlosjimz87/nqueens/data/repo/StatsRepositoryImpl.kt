@@ -1,10 +1,10 @@
-package com.carlosjimz87.nqueens.store.repo
+package com.carlosjimz87.nqueens.data.repo
 
-import com.carlosjimz87.nqueens.store.manager.StoreManager
-import com.carlosjimz87.nqueens.store.model.Leaderboards
-import com.carlosjimz87.nqueens.store.model.RecordResult
-import com.carlosjimz87.nqueens.store.model.ScoreEntry
-import com.carlosjimz87.nqueens.store.model.StatsState
+import com.carlosjimz87.nqueens.data.sources.StoreManager
+import com.carlosjimz87.nqueens.data.model.Leaderboards
+import com.carlosjimz87.nqueens.data.model.RecordResult
+import com.carlosjimz87.nqueens.data.model.ScoreEntry
+import com.carlosjimz87.nqueens.data.model.StatsState
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import java.util.UUID

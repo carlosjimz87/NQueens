@@ -23,7 +23,7 @@ import com.carlosjimz87.nqueens.R
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.carlosjimz87.nqueens.common.formatElapsed
-import com.carlosjimz87.nqueens.store.model.ScoreEntry
+import com.carlosjimz87.nqueens.data.model.ScoreEntry
 
 @Composable
 fun StatsTable(
