@@ -2,19 +2,25 @@ package com.carlosjimz87.nqueens.presentation.board.viewmodel
 
 import com.carlosjimz87.nqueens.MainDispatcherRule
 import com.carlosjimz87.nqueens.di.testModule
-import com.carlosjimz87.nqueens.presentation.board.event.UiEvent
-import com.carlosjimz87.nqueens.presentation.board.model.BoardPhase
-import com.carlosjimz87.nqueens.presentation.board.state.UiState
+import com.carlosjimz87.nqueens.presentation.audio.model.Sound
+import com.carlosjimz87.nqueens.presentation.board.effect.BoardEffect
+import com.carlosjimz87.nqueens.presentation.board.intent.BoardIntent
+import com.carlosjimz87.nqueens.presentation.board.state.BoardPhase
 import com.carlosjimz87.rules.model.BoardError
 import com.carlosjimz87.rules.model.Cell
 import com.carlosjimz87.rules.model.GameStatus
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.async
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.advanceUntilIdle
+import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
-import kotlinx.coroutines.yield
+import kotlinx.coroutines.withTimeout
 import org.junit.After
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Before
@@ -36,7 +42,8 @@ import org.koin.java.KoinJavaComponent.getKoin
 @OptIn(ExperimentalCoroutinesApi::class)
 class BoardViewModelTest {
 
-    @get:Rule val mainDispatcherRule = MainDispatcherRule()
+    @get:Rule
+    val mainDispatcherRule = MainDispatcherRule()
 
     @Before
     fun setUp() {
@@ -50,172 +57,201 @@ class BoardViewModelTest {
 
     private fun getVm(): BoardViewModel = getKoin().get()
 
+    private fun <T> TestScope.awaitItem(
+        flow: Flow<T>,
+        timeoutMs: Long = 1_000,
+        predicate: (T) -> Boolean
+    ) = async {
+        withTimeout(timeoutMs) { flow.first(predicate) }
+    }.also { runCurrent() }
+
+    private suspend fun <T> assertNoItem(
+        flow: Flow<T>,
+        timeoutMs: Long = 150,
+        predicate: (T) -> Boolean
+    ) {
+        val found = try {
+            withTimeout(timeoutMs) { flow.first(predicate) }
+            true
+        } catch (_: Exception) {
+            false
+        }
+        assertTrue("Unexpected item emitted", !found)
+    }
+
+    private fun TestScope.awaitSound(vm: BoardViewModel, sound: Sound, timeoutMs: Long = 1_000) =
+        awaitItem(vm.effects, timeoutMs) { it is BoardEffect.PlaySound && it.sound == sound }
+
+    private suspend fun assertNoSound(
+        vm: BoardViewModel,
+        sound: Sound,
+        timeoutMs: Long = 150
+    ) =
+        assertNoItem(vm.effects, timeoutMs) { it is BoardEffect.PlaySound && it.sound == sound }
+
     @Test
-    fun `init with valid initial size sets boardSize and ends Idle`() = runTest {
+    fun `init with valid initial size sets boardSize and ends not loading`() = runTest {
         val vm = getVm()
         advanceUntilIdle()
 
-        assertEquals(8, vm.boardSize.value)
-        assertTrue(vm.uiState.value is UiState.Idle)
+        val s = vm.state.value
+        assertEquals(8, s.boardSize)
+        assertFalse(s.isLoading)
+        assertNull(s.error)
     }
 
     @Test
-    fun `onSizeChanged with valid new size updates boardSize goes Idle and clears queens`() = runTest {
+    fun `SetBoardSize valid updates boardSize ends not loading and clears queens`() = runTest {
         val vm = getVm()
         advanceUntilIdle()
 
-        vm.onCellClicked(Cell(row = 0, col = 0))
-        vm.onCellClicked(Cell(row = 1, col = 1))
-        assertEquals(2, vm.queens.value.size)
+        // add some queens before size change
+        vm.dispatch(BoardIntent.ClickCell(Cell(row = 0, col = 0)))
+        vm.dispatch(BoardIntent.ClickCell(Cell(row = 1, col = 1)))
+        advanceUntilIdle()
+        assertEquals(2, vm.state.value.queens.size)
 
-        vm.onSizeChanged(6)
+        vm.dispatch(BoardIntent.SetBoardSize(6))
         advanceUntilIdle()
 
-        assertEquals(6, vm.boardSize.value)
-        assertTrue(vm.uiState.value is UiState.Idle)
-        assertTrue(vm.queens.value.isEmpty())
+        val s = vm.state.value
+        assertEquals(6, s.boardSize)
+        assertFalse(s.isLoading)
+        assertNull(s.error)
+        assertTrue(s.queens.isEmpty())
     }
 
     @Test
-    fun `onSizeChanged with invalid size emits BoardInvalid(small) and keeps last valid boardSize and queens`() = runTest {
+    fun `SetBoardSize invalid small sets error and keeps last valid boardSize and queens`() =
+        runTest {
+            val vm = getVm()
+            advanceUntilIdle()
+
+            val queenCell = Cell(row = 0, col = 0)
+            vm.dispatch(BoardIntent.ClickCell(queenCell))
+            advanceUntilIdle()
+
+            assertEquals(setOf(queenCell), vm.state.value.queens)
+
+            vm.dispatch(BoardIntent.SetBoardSize(2))
+            advanceUntilIdle()
+
+            val s = vm.state.value
+            assertEquals(8, s.boardSize) // keeps previous
+            assertEquals(setOf(queenCell), s.queens) // keeps previous
+            assertFalse(s.isLoading)
+            assertEquals(BoardError.SizeTooSmall, s.error)
+        }
+
+    @Test
+    fun `SetBoardSize invalid big sets error and keeps last valid boardSize`() = runTest {
+        val vm = getVm()
+        advanceUntilIdle()
+
+        vm.dispatch(BoardIntent.SetBoardSize(22))
+        advanceUntilIdle()
+
+        val s = vm.state.value
+        assertEquals(8, s.boardSize)
+        assertFalse(s.isLoading)
+        assertEquals(BoardError.SizeTooBig, s.error)
+    }
+
+    @Test
+    fun `SetBoardSize same size does nothing`() = runTest {
         val vm = getVm()
         advanceUntilIdle()
 
         val queenCell = Cell(row = 0, col = 0)
-        vm.onCellClicked(queenCell)
-        assertEquals(setOf(queenCell), vm.queens.value)
-
-        vm.onSizeChanged(2)
+        vm.dispatch(BoardIntent.ClickCell(queenCell))
         advanceUntilIdle()
 
-        assertEquals(8, vm.boardSize.value)
-        assertEquals(setOf(queenCell), vm.queens.value)
+        val before = vm.state.value
 
-        val state = vm.uiState.value
-        assertTrue(state is UiState.InvalidBoard)
-        state as UiState.InvalidBoard
-        assertEquals(BoardError.SizeTooSmall, state.error)
+        vm.dispatch(BoardIntent.SetBoardSize(8))
+        advanceUntilIdle()
+
+        val after = vm.state.value
+        assertEquals(before.boardSize, after.boardSize)
+        assertEquals(before.error, after.error)
+        assertEquals(before.isLoading, after.isLoading)
+        assertEquals(before.queens, after.queens)
+        assertEquals(before.conflicts, after.conflicts)
     }
 
     @Test
-    fun `onSizeChanged with invalid size emits BoardInvalid(big) and keeps last valid boardSize`() = runTest {
-        val vm = getVm()
-        advanceUntilIdle()
-
-        vm.onSizeChanged(22)
-        advanceUntilIdle()
-
-        assertEquals(8, vm.boardSize.value)
-
-        val state = vm.uiState.value
-        assertTrue(state is UiState.InvalidBoard)
-        state as UiState.InvalidBoard
-        assertEquals(BoardError.SizeTooBig, state.error)
-    }
-
-    @Test
-    fun `onSizeChanged with same size does nothing`() = runTest {
-        val vm = getVm()
-        advanceUntilIdle()
-
-        val queenCell = Cell(row = 0, col = 0)
-        vm.onCellClicked(queenCell)
-        assertEquals(setOf(queenCell), vm.queens.value)
-
-        val initialBoardSize = vm.boardSize.value
-        val initialUiState = vm.uiState.value
-
-        vm.onSizeChanged(8)
-        advanceUntilIdle()
-
-        assertEquals(initialBoardSize, vm.boardSize.value)
-        assertEquals(initialUiState, vm.uiState.value)
-        assertEquals(setOf(queenCell), vm.queens.value)
-    }
-
-    @Test
-    fun `onCellClicked adds queen when cell is empty`() = runTest {
+    fun `ClickCell adds queen when cell is empty`() = runTest {
         val vm = getVm()
         advanceUntilIdle()
 
         val cell = Cell(row = 3, col = 4)
-        vm.onCellClicked(cell)
+        vm.dispatch(BoardIntent.ClickCell(cell))
+        advanceUntilIdle()
 
-        assertTrue(cell in vm.queens.value)
-        assertEquals(1, vm.queens.value.size)
+        val s = vm.state.value
+        assertTrue(cell in s.queens)
+        assertEquals(1, s.queens.size)
     }
 
     @Test
-    fun `onCellClicked removes queen when cell already has queen`() = runTest {
+    fun `ClickCell removes queen when cell already has queen`() = runTest {
         val vm = getVm()
         advanceUntilIdle()
 
         val cell = Cell(row = 3, col = 4)
-        vm.onCellClicked(cell)  // add
-        vm.onCellClicked(cell)  // remove
 
-        assertTrue(vm.queens.value.isEmpty())
+        vm.dispatch(BoardIntent.ClickCell(cell)) // add
+        vm.dispatch(BoardIntent.ClickCell(cell)) // remove
+        advanceUntilIdle()
+
+        assertTrue(vm.state.value.queens.isEmpty())
     }
 
     @Test
-    fun `onCellClicked on empty cell adds queen and emits QueenPlaced`() = runTest {
+    fun `ClickCell on empty cell emits PlaySound QUEEN_PLACED`() = runTest {
         val vm = getVm()
         advanceUntilIdle()
 
-        val cell = Cell(row = 0, col = 0)
+        val awaited = awaitSound(vm, Sound.QUEEN_PLACED)
 
-        val events = mutableListOf<UiEvent>()
-        val job = launch {
-            vm.events.collect { events.add(it) }
-        }
-
-        yield()
-
-        vm.onCellClicked(cell)
+        val cell = Cell(0, 0)
+        vm.dispatch(BoardIntent.ClickCell(cell))
         advanceUntilIdle()
 
-        assertTrue(cell in vm.queens.value)
-        assertTrue(events.any { it is UiEvent.QueenPlaced })
-
-        job.cancel()
+        assertTrue(cell in vm.state.value.queens)
+        awaited.await()
     }
 
     @Test
-    fun `onCellClicked on occupied cell removes queen and does not emit new QueenPlaced`() = runTest {
+    fun `ClickCell on occupied cell emits PlaySound QUEEN_REMOVED and not QUEEN_PLACED`() = runTest {
         val vm = getVm()
         advanceUntilIdle()
 
-        val cell = Cell(row = 0, col = 0)
-
-        val events = mutableListOf<UiEvent>()
-        val job = launch {
-            vm.events.collect { events.add(it) }
-        }
-
-        vm.onCellClicked(cell)
-        advanceUntilIdle()
-        events.clear()
-
-        vm.onCellClicked(cell)
+        val cell = Cell(0, 0)
+        vm.dispatch(BoardIntent.ClickCell(cell)) // place
         advanceUntilIdle()
 
-        assertTrue(vm.queens.value.isEmpty())
-        assertTrue(events.none { it is UiEvent.QueenPlaced })
+        val awaitedRemoved = awaitSound(vm, Sound.QUEEN_REMOVED)
 
-        job.cancel()
+        vm.dispatch(BoardIntent.ClickCell(cell)) // remove
+        advanceUntilIdle()
+
+        assertTrue(vm.state.value.queens.isEmpty())
+        awaitedRemoved.await()
+        assertNoSound(vm, Sound.QUEEN_PLACED)
     }
 
     @Test
-    fun `init with valid initial size sets NotStarted and elapsed is zero`() = runTest {
+    fun `init sets NotStarted and elapsed is zero`() = runTest {
         val vm = getVm()
         advanceUntilIdle()
 
-        val status = vm.gameStatus.value
+        val status = vm.state.value.gameState?.status
         assertTrue(status is GameStatus.NotStarted)
         status as GameStatus.NotStarted
         assertEquals(8, status.size)
 
-        assertEquals(0L, vm.elapsedMillis.value)
+        assertEquals(0L, vm.state.value.elapsedMillis)
     }
 
     @Test
@@ -223,10 +259,10 @@ class BoardViewModelTest {
         val vm = getVm()
         advanceUntilIdle()
 
-        vm.onCellClicked(Cell(row = 0, col = 0))
+        vm.dispatch(BoardIntent.ClickCell(Cell(row = 0, col = 0)))
         advanceUntilIdle()
 
-        val status = vm.gameStatus.value
+        val status = vm.state.value.gameState?.status
         assertTrue(status is GameStatus.InProgress)
         status as GameStatus.InProgress
 
@@ -235,112 +271,121 @@ class BoardViewModelTest {
     }
 
     @Test
-    fun `removing all queens returns game to NotStarted and resets timer`() = runTest {
+    fun `removing all queens returns game to NotStarted`() = runTest {
         val vm = getVm()
         advanceUntilIdle()
 
         val cell = Cell(row = 0, col = 0)
-
-        vm.onCellClicked(cell) // place
+        vm.dispatch(BoardIntent.ClickCell(cell)) // place
+        vm.dispatch(BoardIntent.ClickCell(cell)) // remove
         advanceUntilIdle()
 
-        vm.onCellClicked(cell) // remove
-        advanceUntilIdle()
-
-        val status = vm.gameStatus.value
+        val status = vm.state.value.gameState?.status
         assertTrue(status is GameStatus.NotStarted)
         status as GameStatus.NotStarted
         assertEquals(8, status.size)
 
-        assertEquals(0L, vm.elapsedMillis.value)
+        // con timer real puede ser 0 o muy cercano a 0; si tu GameTimer fake resetea a 0, esto pasa fijo
+        assertEquals(0L, vm.state.value.elapsedMillis)
     }
 
     @Test
-    fun `changing to a new valid size resets queens moves and timer and sets NotStarted`() = runTest {
+    fun `changing to a new valid size resets queens and sets NotStarted`() = runTest {
         val vm = getVm()
-        vm.onCellClicked(Cell(row = 0, col = 0))
-        vm.onCellClicked(Cell(row = 1, col = 1))
         advanceUntilIdle()
 
-        vm.onSizeChanged(6)
+        vm.dispatch(BoardIntent.ClickCell(Cell(row = 0, col = 0)))
+        vm.dispatch(BoardIntent.ClickCell(Cell(row = 1, col = 1)))
         advanceUntilIdle()
 
-        assertEquals(6, vm.boardSize.value)
+        vm.dispatch(BoardIntent.SetBoardSize(6))
+        advanceUntilIdle()
 
-        val status = vm.gameStatus.value
+        val s = vm.state.value
+        assertEquals(6, s.boardSize)
+        assertTrue(s.queens.isEmpty())
+        assertEquals(0L, s.elapsedMillis)
+
+        val status = s.gameState?.status
         assertTrue(status is GameStatus.NotStarted)
         status as GameStatus.NotStarted
         assertEquals(6, status.size)
-
-        assertTrue(vm.queens.value.isEmpty())
-        assertEquals(0L, vm.elapsedMillis.value)
     }
 
     @Test
-    fun `placing N queens with zero conflicts moves game to Solved`() = runTest {
+    fun `placing N queens with zero conflicts moves game to Solved and triggers win phase`() =
+        runTest {
+            val vm = getVm()
+            advanceUntilIdle()
+
+            vm.dispatch(BoardIntent.SetBoardSize(4))
+            advanceUntilIdle()
+
+            vm.dispatch(BoardIntent.ClickCell(Cell(row = 0, col = 1)))
+            vm.dispatch(BoardIntent.ClickCell(Cell(row = 1, col = 3)))
+            vm.dispatch(BoardIntent.ClickCell(Cell(row = 2, col = 0)))
+            vm.dispatch(BoardIntent.ClickCell(Cell(row = 3, col = 2)))
+            advanceUntilIdle()
+
+            val s = vm.state.value
+            val status = s.gameState?.status
+            assertTrue(status is GameStatus.Solved)
+            status as GameStatus.Solved
+            assertEquals(4, status.size)
+            assertTrue(status.moves >= 4)
+
+            // tu VM pone WinAnimating al resolver
+            assertEquals(BoardPhase.WinAnimating, s.boardPhase)
+        }
+
+    @Test
+    fun `ResetGame re-applies size clears latestRank sets phase Normal`() = runTest {
         val vm = getVm()
-        vm.onSizeChanged(4)
         advanceUntilIdle()
 
-        vm.onCellClicked(Cell(row = 0, col = 1))
-        vm.onCellClicked(Cell(row = 1, col = 3))
-        vm.onCellClicked(Cell(row = 2, col = 0))
-        vm.onCellClicked(Cell(row = 3, col = 2))
+        // forces a win
+        vm.dispatch(BoardIntent.EnterWinAnimation)
+        advanceUntilIdle()
+        assertEquals(BoardPhase.WinAnimating, vm.state.value.boardPhase)
+
+        vm.dispatch(BoardIntent.ResetGame)
         advanceUntilIdle()
 
-        val status = vm.gameStatus.value
-        assertTrue(status is GameStatus.Solved)
-        status as GameStatus.Solved
-
-        assertEquals(4, status.size)
-        assertTrue(status.moves >= 4)
+        val s = vm.state.value
+        assertEquals(8, s.boardSize)
+        assertFalse(s.isLoading)
+        assertNull(s.error)
+        assertEquals(BoardPhase.Normal, s.boardPhase)
+        assertNull(s.latestRank)
+        assertEquals(0L, s.elapsedMillis)
+        assertTrue(s.queens.isEmpty())
     }
 
     @Test
-    fun `resetGame forces reapply same size resets to Normal and clears latestRank`() = runTest {
+    fun `EnterWinAnimation sets boardPhase WinAnimating`() = runTest {
         val vm = getVm()
         advanceUntilIdle()
 
-        vm.enterWinAnimation()
-        advanceUntilIdle()
-        assertEquals(BoardPhase.WinAnimating, vm.boardPhase.value) // ✅
+        assertEquals(BoardPhase.Normal, vm.state.value.boardPhase)
 
-        vm.resetGame()
+        vm.dispatch(BoardIntent.EnterWinAnimation)
         advanceUntilIdle()
 
-        assertEquals(8, vm.boardSize.value)
-        assertTrue(vm.uiState.value is UiState.Idle)
-        assertEquals(BoardPhase.Normal, vm.boardPhase.value) // ✅
-        assertNull(vm.latestRank.value)
-        assertEquals(0L, vm.elapsedMillis.value)
-        assertTrue(vm.queens.value.isEmpty())
+        assertEquals(BoardPhase.WinAnimating, vm.state.value.boardPhase)
     }
 
     @Test
-    fun `enterWinAnimation sets boardPhase to WinAnimating`() = runTest {
+    fun `WinAnimationFinished sets boardPhase WinFrozen`() = runTest {
         val vm = getVm()
         advanceUntilIdle()
 
-        assertEquals(BoardPhase.Normal, vm.boardPhase.value) // ✅
+        vm.dispatch(BoardIntent.EnterWinAnimation)
+        advanceUntilIdle()
+        assertEquals(BoardPhase.WinAnimating, vm.state.value.boardPhase)
 
-        vm.enterWinAnimation()
+        vm.dispatch(BoardIntent.WinAnimationFinished)
         advanceUntilIdle()
 
-        assertEquals(BoardPhase.WinAnimating, vm.boardPhase.value) // ✅
-    }
-
-    @Test
-    fun `onWinAnimationFinished sets boardPhase to WinFrozen`() = runTest {
-        val vm = getVm()
-        advanceUntilIdle()
-
-        vm.enterWinAnimation()
-        advanceUntilIdle()
-        assertEquals(BoardPhase.WinAnimating, vm.boardPhase.value) // ✅
-
-        vm.onWinAnimationFinished()
-        advanceUntilIdle()
-
-        assertEquals(BoardPhase.WinFrozen, vm.boardPhase.value) // ✅
+        assertEquals(BoardPhase.WinFrozen, vm.state.value.boardPhase)
     }
 }

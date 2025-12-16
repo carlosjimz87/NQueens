@@ -21,26 +21,27 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
+import com.carlosjimz87.nqueens.R
 import com.carlosjimz87.nqueens.common.Constants
-import com.carlosjimz87.nqueens.presentation.audio.AndroidSoundEffectPlayer
-import com.carlosjimz87.nqueens.presentation.board.event.UiEvent
-import com.carlosjimz87.nqueens.presentation.board.state.UiState
-import com.carlosjimz87.nqueens.presentation.board.viewmodel.BoardViewModel
 import com.carlosjimz87.nqueens.data.model.LatestRank
 import com.carlosjimz87.nqueens.data.model.Leaderboards
+import com.carlosjimz87.nqueens.presentation.audio.AndroidSoundEffectPlayer
+import com.carlosjimz87.nqueens.presentation.audio.model.Sound
+import com.carlosjimz87.nqueens.presentation.board.effect.BoardEffect
+import com.carlosjimz87.nqueens.presentation.board.intent.BoardIntent
+import com.carlosjimz87.nqueens.presentation.board.state.BoardPhase
+import com.carlosjimz87.nqueens.presentation.board.viewmodel.BoardViewModel
+import com.carlosjimz87.nqueens.ui.composables.audio.rememberSoundPlayer
 import com.carlosjimz87.nqueens.ui.composables.board.BoardAdaptative
 import com.carlosjimz87.nqueens.ui.composables.board.InvalidBoard
 import com.carlosjimz87.nqueens.ui.composables.board.WinAnimation
 import com.carlosjimz87.nqueens.ui.composables.dialogs.BoardSizeDialog
 import com.carlosjimz87.nqueens.ui.composables.dialogs.StatsDialog
 import com.carlosjimz87.nqueens.ui.composables.dialogs.WinDialog
+import com.carlosjimz87.rules.model.BoardError
 import com.carlosjimz87.rules.model.Cell
 import com.carlosjimz87.rules.model.GameStatus
-import androidx.compose.ui.res.stringResource
-import com.carlosjimz87.nqueens.R
-import com.carlosjimz87.nqueens.presentation.board.model.BoardPhase
-import com.carlosjimz87.rules.model.BoardError
 import org.koin.androidx.compose.koinViewModel
 
 @Composable
@@ -50,23 +51,25 @@ fun BoardScreen(
 ) {
     val cs = MaterialTheme.colorScheme
 
-    // --- State Collection ---
-    val boardSize by viewModel.boardSize.collectAsState()
-    val uiState by viewModel.uiState.collectAsState()
-    val queens by viewModel.queens.collectAsState()
-    val conflicts by viewModel.conflicts.collectAsState()
-    val gameStatus by viewModel.gameStatus.collectAsState()
-    val elapsedMillis by viewModel.elapsedMillis.collectAsState()
-    val latestRank by viewModel.latestRank.collectAsState()
-    val phase by viewModel.boardPhase.collectAsState()
+    val state by viewModel.state.collectAsState()
 
+    val boardSize = state.boardSize
+    val isLoading = state.isLoading
+    val queens = state.queens
+    val conflicts = state.conflicts
+    val gameStatus = state.gameState?.status
+    val elapsedMillis = state.elapsedMillis
+    val latestRank = state.latestRank
+    val phase = state.boardPhase
+
+    // Animation Snapshots
     var solvedQueens by rememberSaveable { mutableStateOf<List<Cell>>(emptyList()) }
+    var winAnimToken by rememberSaveable { mutableIntStateOf(0) }
 
     // --- Local UI State ---
     val snackbarHostState = remember { SnackbarHostState() }
     var showChangeSizeDialog by rememberSaveable { mutableStateOf(false) }
     var showStatsDialog by rememberSaveable { mutableStateOf(false) }
-    var winAnimToken by rememberSaveable { mutableIntStateOf(0) }
 
     val animatingWin = phase == BoardPhase.WinAnimating
     val showWinDialog = phase == BoardPhase.WinFrozen
@@ -75,18 +78,21 @@ fun BoardScreen(
 
     val soundPlayer = rememberSoundPlayer()
 
-    // --- Effects ---
+    // --- Effects (sounds/snackbar) ---
     BoardScreenEffects(
         viewModel = viewModel,
         snackbarHostState = snackbarHostState,
         soundPlayer = soundPlayer,
-        queens = queens,
-        onSolved = {
+        currentBoardError = state.error
+    )
+
+    // --- Win Animation Trigger ---
+    LaunchedEffect(phase) {
+        if (phase == BoardPhase.WinAnimating) {
             solvedQueens = queens.toList()
             winAnimToken++
-            viewModel.enterWinAnimation()
         }
-    )
+    }
 
     // --- Dialogs ---
     BoardScreenDialogs(
@@ -101,7 +107,7 @@ fun BoardScreen(
         showWinDialog = showWinDialog,
         onDismissChangeSizeDialog = { showChangeSizeDialog = false },
         onDismissStatsDialog = { showStatsDialog = false },
-        onDismissWinDialog = { /* lo controla boardPhase */ },
+        onDismissWinDialog = { /* boardPhase controlled */ },
         onOpenStatsDialog = { showStatsDialog = true }
     )
 
@@ -110,8 +116,6 @@ fun BoardScreen(
         modifier = modifier.fillMaxSize(),
         snackbarHost = { SnackbarHost(snackbarHostState) }
     ) { innerPadding ->
-
-        val isLoading = uiState is UiState.Loading
 
         when {
             isLoading -> Box(
@@ -125,17 +129,17 @@ fun BoardScreen(
             }
 
             boardSize != null -> BoardAdaptative(
-                boardSize = boardSize!!,
-                uiState = uiState,
+                boardSize = boardSize,
+                isLoading = state.isLoading,
                 queens = queens,
                 conflicts = conflicts,
                 gameStatus = gameStatus,
                 elapsedMillis = elapsedMillis,
                 allowClicks = allowClicks,
                 showQueens = showQueens,
-                onCellClick = { cell -> if (allowClicks) viewModel.onCellClicked(cell) },
+                onCellClick = { cell -> if (allowClicks) viewModel.dispatch(BoardIntent.ClickCell(cell)) },
                 onChange = { showChangeSizeDialog = true },
-                onReset = viewModel::resetGame,
+                onReset = { viewModel.dispatch(BoardIntent.ResetGame) },
                 onStats = { showStatsDialog = true },
                 modifier = Modifier
                     .fillMaxSize()
@@ -144,10 +148,10 @@ fun BoardScreen(
                 winOverlay = {
                     WinAnimation(
                         token = winAnimToken,
-                        size = boardSize!!,
+                        size = boardSize,
                         queens = solvedQueens,
                         enabled = animatingWin,
-                        onFinished = { viewModel.onWinAnimationFinished() }
+                        onFinished = { viewModel.dispatch(BoardIntent.WinAnimationFinished) }
                     )
                 }
             )
@@ -174,48 +178,36 @@ private fun BoardScreenEffects(
     viewModel: BoardViewModel,
     snackbarHostState: SnackbarHostState,
     soundPlayer: AndroidSoundEffectPlayer,
-    queens: Set<Cell>,
-    onSolved: () -> Unit
+    currentBoardError: BoardError?
 ) {
     val msgTooSmall = stringResource(R.string.board_too_small)
     val msgTooBig = stringResource(R.string.board_too_big)
+    val msgInvalid = stringResource(R.string.invalid_size)
 
-    // ✅ invalid board size messages
-    LaunchedEffect(viewModel, snackbarHostState) {
-        viewModel.uiState.collect { state ->
-            if (state is UiState.InvalidBoard) {
-                val msg = when (state.error) {
-                    BoardError.SizeTooSmall -> msgTooSmall
-                    BoardError.SizeTooBig -> msgTooBig
-                    else -> null
+    LaunchedEffect(viewModel, snackbarHostState, soundPlayer) {
+        viewModel.effects.collect { effect ->
+            when (effect) {
+                is BoardEffect.PlaySound -> when (effect.sound) {
+                    Sound.QUEEN_PLACED -> soundPlayer.playQueenPlaced()
+                    Sound.QUEEN_REMOVED -> soundPlayer.playQueenRemoved()
+                    Sound.BOARD_RESET -> soundPlayer.playStart()
+                    Sound.CONFLICT_DETECTED -> soundPlayer.playConflict()
+                    Sound.SOLVED -> soundPlayer.playSolved()
                 }
-                if (msg != null) snackbarHostState.showSnackbar(msg)
-            }
-        }
-    }
 
-    // ✅ sounds (one-shot events)
-    LaunchedEffect(viewModel, soundPlayer) {
-        viewModel.events.collect { event ->
-            when (event) {
-                is UiEvent.QueenPlaced -> soundPlayer.playQueenPlaced()
-                is UiEvent.QueenRemoved -> soundPlayer.playQueenRemoved()
-                is UiEvent.BoardReset -> soundPlayer.playStart()
-                is UiEvent.ConflictDetected -> soundPlayer.playConflict()
+                is BoardEffect.ShowSnackbar -> {
+                    val msg = if (effect.message == BoardViewModel.INVALID_BOARD_SIZE_KEY) {
+                        when (currentBoardError) {
+                            BoardError.SizeTooSmall -> msgTooSmall
+                            BoardError.SizeTooBig -> msgTooBig
+                            else -> msgInvalid
+                        }
+                    } else {
+                        effect.message
+                    }
+                    snackbarHostState.showSnackbar(msg)
+                }
             }
-        }
-    }
-
-    // ✅ solved detection: only when status changes to Solved
-    LaunchedEffect(viewModel, soundPlayer) {
-        var prevSolved = false
-        viewModel.gameStatus.collect { status ->
-            val solvedNow = status is GameStatus.Solved
-            if (solvedNow && !prevSolved) {
-                soundPlayer.playSolved()
-                onSolved()
-            }
-            prevSolved = solvedNow
         }
     }
 }
@@ -246,7 +238,7 @@ private fun BoardScreenDialogs(
             dismissEnabled = false,
             onDismiss = { },
             onConfirm = { size ->
-                viewModel.onSizeChanged(size)
+                viewModel.dispatch(BoardIntent.SetBoardSize(size))
             }
         )
     }
@@ -261,7 +253,7 @@ private fun BoardScreenDialogs(
             dismissEnabled = true,
             onDismiss = onDismissChangeSizeDialog,
             onConfirm = { size ->
-                viewModel.onSizeChanged(size)
+                viewModel.dispatch(BoardIntent.SetBoardSize(size))
                 onDismissChangeSizeDialog()
             }
         )
@@ -287,24 +279,16 @@ private fun BoardScreenDialogs(
             rankByMoves = latestRank?.rankByMoves ?: 0,
             onPlayAgain = {
                 onDismissWinDialog()
-                viewModel.resetGame()
+                viewModel.dispatch(BoardIntent.ResetGame)
             },
             onNextLevel = {
                 onDismissWinDialog()
-                viewModel.onSizeChanged(solved.size + 1)
+                viewModel.dispatch(BoardIntent.SetBoardSize(solved.size + 1))
             },
             onShowStats = {
                 onDismissWinDialog()
                 onOpenStatsDialog()
             }
         )
-    }
-}
-
-@Composable
-private fun rememberSoundPlayer(): AndroidSoundEffectPlayer {
-    val context = LocalContext.current
-    return remember(context.applicationContext) {
-        AndroidSoundEffectPlayer(context.applicationContext)
     }
 }

@@ -15,7 +15,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.carlosjimz87.nqueens.presentation.board.state.UiState
 import com.carlosjimz87.nqueens.ui.composables.hud.GameHud
 import com.carlosjimz87.rules.model.Cell
 import com.carlosjimz87.rules.model.Conflicts
@@ -24,7 +23,7 @@ import com.carlosjimz87.rules.model.GameStatus
 @Composable
 fun BoardAdaptative(
     boardSize: Int,
-    uiState: UiState,
+    isLoading: Boolean,
     queens: Set<Cell>,
     conflicts: Conflicts,
     gameStatus: GameStatus?,
@@ -39,15 +38,15 @@ fun BoardAdaptative(
     winOverlay: @Composable BoxScope.() -> Unit = {}
 ) {
     BoxWithConstraints(modifier.fillMaxSize()) {
-        val isLoading = uiState is UiState.Loading
 
         val useSplitLayout = maxWidth > maxHeight * 1.05f // Slightly favor landscape
 
         @Composable
         fun BoardSlot(modifier: Modifier) {
             Box(modifier, contentAlignment = Alignment.Center) {
-                if (isLoading) CircularProgressIndicator()
-                else {
+                if (isLoading) {
+                    CircularProgressIndicator()
+                } else {
                     Board(
                         size = boardSize,
                         queens = queens,
