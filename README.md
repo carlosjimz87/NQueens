@@ -1,6 +1,6 @@
-# ♛ N-Queens Android App
+# ♛ N-Queens Android App — MVI Architecture
 
-An elegant Android implementation of the classic **N-Queens puzzle**, built with modern Android architecture, Jetpack Compose, and a strong focus on clean code, testability, and separation of concerns.
+An elegant Android implementation of the classic **N-Queens puzzle**, built with modern Android architecture (MVI version), Jetpack Compose, and a strong focus on clean code, testability, and separation of concerns.
 
 The app allows users to play, solve, and track their performance across different board sizes, featuring smooth animations, sound effects, and persistent leaderboards.
 
@@ -39,7 +39,7 @@ The app allows users to play, solve, and track their performance across differen
 
 - **Kotlin**
 - **Jetpack Compose**
-- **MVVM Architecture**
+- **MVI Architecture**
 - **Kotlin Coroutines & Flow**
 - **Koin** (Dependency Injection)
 - **Jetpack DataStore (Preferences)**
@@ -48,76 +48,140 @@ The app allows users to play, solve, and track their performance across differen
 
 ---
 
-## 🧠 Architecture Overview
+## 🧠 Architecture Overview (MVI)
 
-The project is designed with **clear separation of concerns** and testability as first-class goals.
+This architecture follows a **strict unidirectional data flow**:
 
-### Modules
-
-#### `app`
-Android-specific layer:
-- Jetpack Compose UI
-- `BoardViewModel`
-- Sound effects
-- Persistence and repositories
-- Dependency Injection configuration
-
-#### `rules`
-Pure Kotlin module:
-- `NQueensSolver`
-- Conflict detection and validation
-- Immutable domain models (`GameState`, `GameStatus`, etc.)
-
-This module has **no Android dependencies**, which allows fast and deterministic unit testing.
+UI → Intent → ViewModel → State → UI  
+                                           ↘ Effect → UI
 
 ---
 
-## 🧩 Core Components
+## 📦 Modules
 
-### `BoardViewModel`
-Central orchestrator of the app:
-- Exposes UI state via `StateFlow`
-- Emits one-off UI events via `SharedFlow`
-- Coordinates solver, timer, and statistics
-- Manages board lifecycle phases (normal play, win animation, frozen state)
+### `app`
+Android layer:
+- Jetpack Compose UI
+- `BoardViewModel` (MVI)
+- Sound system
+- Persistence & repositories
+- Dependency Injection
 
-### `NQueensSolver`
-- Handles queen placement and removal
-- Detects conflicts
-- Determines when the board is solved
-- Produces immutable `GameState` instances
+### `rules`
+Pure Kotlin domain module:
+- `NQueensSolver`
+- Conflict detection
+- Domain models (`GameState`, `GameStatus`, `Conflicts`, etc.)
 
-### `GameTimer`
-Coroutine-based timer abstraction:
-- Emits elapsed time as `StateFlow`
-- Supports start, stop, and reset
-- Easily replaceable with a fake implementation for testing
+> This module has **no Android dependencies** and is fully unit-testable.
 
-### `StatsRepository`
-- Records completed games
-- Applies deduplication rules
-- Computes rankings per board size
-- Produces leaderboards sorted by time and moves
+---
 
-### `StoreManager`
-Generic persistence abstraction over DataStore:
-- Uses `kotlinx.serialization`
-- Gracefully handles corrupted data
-- Fully unit-testable without Robolectric
+## 🧩 Core MVI Components
+
+### BoardIntent
+
+Represents **user intentions** and UI actions.
+
+```kotlin
+sealed interface BoardIntent {
+    data class SetBoardSize(val size: Int) : BoardIntent
+    data class ClickCell(val cell: Cell) : BoardIntent
+    object ResetGame : BoardIntent
+    object EnterWinAnimation : BoardIntent
+    object WinAnimationFinished : BoardIntent
+}
+```
+
+---
+
+### BoardState
+
+Single immutable source of truth for the UI.
+
+Only **UI-relevant data** lives here. Domain state is embedded via `GameState`.
+
+```kotlin
+data class BoardState(
+    val isLoading: Boolean = false,
+    val boardSize: Int? = null,
+    val gameState: GameState? = null,
+    val elapsedMillis: Long = 0L,
+    val latestRank: LatestRank? = null,
+    val boardPhase: BoardPhase = BoardPhase.Normal,
+    val error: BoardError? = null
+) {
+    val queens: Set<Cell> get() = gameState?.queens.orEmpty()
+    val conflicts: Conflicts get() = gameState?.conflicts ?: Conflicts.Empty
+}
+```
+
+---
+
+### BoardEffect
+
+One-shot effects that **must not be persisted in state**.
+
+```kotlin
+sealed interface BoardEffect {
+    data class PlaySound(val sound: Sound) : BoardEffect
+    data class ShowSnackbar(val message: String) : BoardEffect
+}
+```
+
+Used for:
+- Sound playback
+- Snackbars
+- Transient UI reactions
+
+---
+
+### BoardViewModel
+
+The single orchestrator of the feature.
+
+Responsibilities:
+- Handle `BoardIntent`
+- Update `BoardState`
+- Emit `BoardEffect`
+- Coordinate solver, timer, and persistence
+- Control UI phases explicitly
+
+Key characteristics:
+- No UI logic
+- Explicit side effects
+- Fully unit-testable
+- Deterministic state transitions
+
+---
+
+## 🎮 UI Phases
+
+UI transitions are modeled explicitly using `BoardPhase`:
+
+```kotlin
+enum class BoardPhase {
+    Normal,
+    WinAnimating,
+    WinFrozen
+}
+```
+
+This avoids implicit UI conditions and keeps animations and dialogs predictable.
 
 ---
 
 ## 🧪 Testing Strategy
 
-The project emphasizes **fast, deterministic unit tests**:
+The architecture enables fast and reliable tests:
 
-- Solver logic tested in isolation (pure Kotlin)
-- ViewModel tested with fake dependencies
-- DataStore tested using temporary files (no Robolectric)
-- Coroutine-based logic tested with test dispatchers
-- UI behavior driven entirely by state
+- Domain logic tested in isolation (`rules` module)
+- ViewModel tested with fake solver, timer, and repositories
+- Effects tested explicitly
+- Coroutine behavior tested with test dispatchers
+- No Robolectric required
 
-Run tests with:
+Run all tests:
 
 ```bash
 ./gradlew test
@@ -125,35 +189,23 @@ Run tests with:
 
 ---
 
-## 🚀 Build & Run
+## 📐 Design Principles
 
-### Clone the repository
-
-```bash
-git clone <repository-url>
-cd nqueens-android
-```
-
-### Build the project
-
-```bash
-./gradlew build
-```
-
-### Run on device or emulator
-
-```bash
-./gradlew installDebug
-```
+- Single source of truth
+- Immutable state
+- Explicit side effects
+- Unidirectional data flow
+- Domain logic isolated from UI
+- UI as a pure function of state
+- High testability with low ceremony
 
 ---
 
-## 📐 Design Principles
+## 🚀 Why MVI here?
 
-- Single source of truth for state
-- Immutable domain models
-- Unidirectional data flow
-- No business logic inside composables
-- Clear separation between UI, domain, and data layers
-- Practical testability with high coverage
-- Modular architecture with reusable components
+MVI fits this project because:
+
+- The game behaves like a state machine
+- UI transitions matter (win animation, frozen board)
+- Side effects must be explicit
+- Predictability is more valuable than flexibility
