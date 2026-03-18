@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import com.carlosjimz87.rules.model.Cell
 import com.carlosjimz87.rules.model.Conflicts
 
@@ -29,6 +30,7 @@ fun SquaresAndQueens(
                         modifier = Modifier
                             .weight(1f)
                             .fillMaxSize()
+                            .testTag("cell_${rank}_${file}")
                             .clickable { onCellClick(cell) },
                         isDarkSquare = isDark,
                         hasQueen = hasQueen,
