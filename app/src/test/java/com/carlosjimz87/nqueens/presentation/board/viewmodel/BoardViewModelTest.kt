@@ -6,6 +6,8 @@ import com.carlosjimz87.nqueens.presentation.audio.model.Sound
 import com.carlosjimz87.nqueens.presentation.board.effect.BoardEffect
 import com.carlosjimz87.nqueens.presentation.board.intent.BoardIntent
 import com.carlosjimz87.nqueens.presentation.board.state.BoardPhase
+import com.carlosjimz87.nqueens.presentation.timer.FakeGameTimer
+import com.carlosjimz87.nqueens.presentation.timer.GameTimer
 import com.carlosjimz87.rules.model.BoardError
 import com.carlosjimz87.rules.model.Cell
 import com.carlosjimz87.rules.model.GameStatus
@@ -21,6 +23,7 @@ import kotlinx.coroutines.withTimeout
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Before
@@ -387,5 +390,242 @@ class BoardViewModelTest {
         advanceUntilIdle()
 
         assertEquals(BoardPhase.WinFrozen, vm.state.value.boardPhase)
+    }
+
+    // ---------------------------------------------------------------
+    // New tests: effects, timer interaction, stats, and leaderboards
+    // ---------------------------------------------------------------
+
+    @Test
+    fun `placing queen with conflict emits CONFLICT_DETECTED sound`() = runTest {
+        val vm = getVm()
+        advanceUntilIdle()
+
+        // Place first queen at (0,0)
+        vm.dispatch(BoardIntent.ClickCell(Cell(row = 0, col = 0)))
+        advanceUntilIdle()
+
+        // Set up listener for CONFLICT_DETECTED before placing the conflicting queen
+        val awaitedConflict = awaitSound(vm, Sound.CONFLICT_DETECTED)
+
+        // Place second queen at (1,1) -- diagonal conflict with (0,0)
+        vm.dispatch(BoardIntent.ClickCell(Cell(row = 1, col = 1)))
+        advanceUntilIdle()
+
+        awaitedConflict.await()
+    }
+
+    @Test
+    fun `solving puzzle emits SOLVED sound`() = runTest {
+        val vm = getVm()
+        advanceUntilIdle()
+
+        vm.dispatch(BoardIntent.SetBoardSize(4))
+        advanceUntilIdle()
+
+        val awaitedSolved = awaitSound(vm, Sound.SOLVED)
+
+        // Valid 4-queens solution
+        vm.dispatch(BoardIntent.ClickCell(Cell(row = 0, col = 1)))
+        vm.dispatch(BoardIntent.ClickCell(Cell(row = 1, col = 3)))
+        vm.dispatch(BoardIntent.ClickCell(Cell(row = 2, col = 0)))
+        vm.dispatch(BoardIntent.ClickCell(Cell(row = 3, col = 2)))
+        advanceUntilIdle()
+
+        awaitedSolved.await()
+    }
+
+    @Test
+    fun `first queen placement starts timer`() = runTest {
+        val vm = getVm()
+        advanceUntilIdle()
+
+        val fakeTimer = getKoin().get<GameTimer>() as FakeGameTimer
+        assertEquals(0, fakeTimer.startCalled)
+
+        vm.dispatch(BoardIntent.ClickCell(Cell(row = 0, col = 0)))
+        advanceUntilIdle()
+
+        assertEquals(1, fakeTimer.startCalled)
+    }
+
+    @Test
+    fun `placing second queen does not start timer again`() = runTest {
+        val vm = getVm()
+        advanceUntilIdle()
+
+        val fakeTimer = getKoin().get<GameTimer>() as FakeGameTimer
+
+        vm.dispatch(BoardIntent.ClickCell(Cell(row = 0, col = 0)))
+        advanceUntilIdle()
+
+        vm.dispatch(BoardIntent.ClickCell(Cell(row = 1, col = 5)))
+        advanceUntilIdle()
+
+        assertEquals(1, fakeTimer.startCalled)
+    }
+
+    @Test
+    fun `solving puzzle stops timer`() = runTest {
+        val vm = getVm()
+        advanceUntilIdle()
+
+        val fakeTimer = getKoin().get<GameTimer>() as FakeGameTimer
+
+        vm.dispatch(BoardIntent.SetBoardSize(4))
+        advanceUntilIdle()
+
+        // Solve 4-queens
+        vm.dispatch(BoardIntent.ClickCell(Cell(row = 0, col = 1)))
+        vm.dispatch(BoardIntent.ClickCell(Cell(row = 1, col = 3)))
+        vm.dispatch(BoardIntent.ClickCell(Cell(row = 2, col = 0)))
+        vm.dispatch(BoardIntent.ClickCell(Cell(row = 3, col = 2)))
+        advanceUntilIdle()
+
+        assertTrue(
+            "Expected timer.stop() to be called at least once, but stopCalled=${fakeTimer.stopCalled}",
+            fakeTimer.stopCalled >= 1
+        )
+    }
+
+    @Test
+    fun `SetBoardSize resets timer`() = runTest {
+        val vm = getVm()
+        advanceUntilIdle()
+
+        val fakeTimer = getKoin().get<GameTimer>() as FakeGameTimer
+        // init already called SetBoardSize(8) which triggers resetBoard -> timer.reset()
+        val resetBefore = fakeTimer.resetCalled
+
+        vm.dispatch(BoardIntent.SetBoardSize(5))
+        advanceUntilIdle()
+
+        assertTrue(
+            "Expected resetCalled to increment, was $resetBefore now ${fakeTimer.resetCalled}",
+            fakeTimer.resetCalled > resetBefore
+        )
+    }
+
+    @Test
+    fun `ResetGame resets timer`() = runTest {
+        val vm = getVm()
+        advanceUntilIdle()
+
+        val fakeTimer = getKoin().get<GameTimer>() as FakeGameTimer
+        val resetBefore = fakeTimer.resetCalled
+
+        vm.dispatch(BoardIntent.ResetGame)
+        advanceUntilIdle()
+
+        assertTrue(
+            "Expected resetCalled to increment, was $resetBefore now ${fakeTimer.resetCalled}",
+            fakeTimer.resetCalled > resetBefore
+        )
+    }
+
+    @Test
+    fun `solving puzzle records stats`() = runTest {
+        val vm = getVm()
+        advanceUntilIdle()
+
+        vm.dispatch(BoardIntent.SetBoardSize(4))
+        advanceUntilIdle()
+
+        // Solve 4-queens
+        vm.dispatch(BoardIntent.ClickCell(Cell(row = 0, col = 1)))
+        vm.dispatch(BoardIntent.ClickCell(Cell(row = 1, col = 3)))
+        vm.dispatch(BoardIntent.ClickCell(Cell(row = 2, col = 0)))
+        vm.dispatch(BoardIntent.ClickCell(Cell(row = 3, col = 2)))
+        advanceUntilIdle()
+
+        // Verify that leaderboards for size 4 now contain an entry
+        val leaderboards = vm.leaderboards(4).first()
+        assertTrue(
+            "Expected at least one entry in byTime leaderboard after solving",
+            leaderboards.byTime.isNotEmpty()
+        )
+        assertTrue(
+            "Expected at least one entry in byMoves leaderboard after solving",
+            leaderboards.byMoves.isNotEmpty()
+        )
+    }
+
+    @Test
+    fun `solving puzzle sets latestRank`() = runTest {
+        val vm = getVm()
+        advanceUntilIdle()
+
+        vm.dispatch(BoardIntent.SetBoardSize(4))
+        advanceUntilIdle()
+
+        // Solve 4-queens
+        vm.dispatch(BoardIntent.ClickCell(Cell(row = 0, col = 1)))
+        vm.dispatch(BoardIntent.ClickCell(Cell(row = 1, col = 3)))
+        vm.dispatch(BoardIntent.ClickCell(Cell(row = 2, col = 0)))
+        vm.dispatch(BoardIntent.ClickCell(Cell(row = 3, col = 2)))
+        advanceUntilIdle()
+
+        val latestRank = vm.state.value.latestRank
+        assertNotNull("latestRank should not be null after solving", latestRank)
+        assertTrue(
+            "rankByTime should be >= 1, was ${latestRank!!.rankByTime}",
+            latestRank.rankByTime >= 1
+        )
+        assertTrue(
+            "rankByMoves should be >= 1, was ${latestRank.rankByMoves}",
+            latestRank.rankByMoves >= 1
+        )
+    }
+
+    @Test
+    fun `SetBoardSize invalid emits ShowSnackbar effect`() = runTest {
+        val vm = getVm()
+        advanceUntilIdle()
+
+        val awaitedSnackbar = awaitItem(vm.effects) {
+            it is BoardEffect.ShowSnackbar && it.message == BoardViewModel.INVALID_BOARD_SIZE_KEY
+        }
+
+        vm.dispatch(BoardIntent.SetBoardSize(2))
+        advanceUntilIdle()
+
+        awaitedSnackbar.await()
+    }
+
+    @Test
+    fun `SetBoardSize valid emits BOARD_RESET sound`() = runTest {
+        val vm = getVm()
+        advanceUntilIdle()
+
+        val awaitedReset = awaitSound(vm, Sound.BOARD_RESET)
+
+        vm.dispatch(BoardIntent.SetBoardSize(5))
+        advanceUntilIdle()
+
+        awaitedReset.await()
+    }
+
+    @Test
+    fun `elapsedMillis updates from timer`() = runTest {
+        val vm = getVm()
+        advanceUntilIdle()
+
+        val fakeTimer = getKoin().get<GameTimer>() as FakeGameTimer
+        fakeTimer.setElapsed(5000L)
+        advanceUntilIdle()
+
+        assertEquals(5000L, vm.state.value.elapsedMillis)
+    }
+
+    @Test
+    fun `leaderboards delegates to repository`() = runTest {
+        val vm = getVm()
+        advanceUntilIdle()
+
+        val leaderboards = vm.leaderboards(8).first()
+        assertNotNull("leaderboards should not be null", leaderboards)
+        // Initially empty since no games have been played for size 8
+        assertNotNull("byTime list should not be null", leaderboards.byTime)
+        assertNotNull("byMoves list should not be null", leaderboards.byMoves)
     }
 }
