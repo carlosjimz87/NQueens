@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.carlosjimz87.nqueens.data.sources.FakeStoreManagerTest" tests="6" skipped="0" failures="0" errors="0" timestamp="2026-03-19T10:42:58.712Z" hostname="vass-07856.local" time="0.012">
+  <properties/>
+  <testcase name="data emits initial value" classname="com.carlosjimz87.nqueens.data.sources.FakeStoreManagerTest" time="0.003"/>
+  <testcase name="data flow reflects updates" classname="com.carlosjimz87.nqueens.data.sources.FakeStoreManagerTest" time="0.004"/>
+  <testcase name="update changes current value" classname="com.carlosjimz87.nqueens.data.sources.FakeStoreManagerTest" time="0.002"/>
+  <testcase name="multiple sequential updates accumulate" classname="com.carlosjimz87.nqueens.data.sources.FakeStoreManagerTest" time="0.002"/>
+  <testcase name="current returns initial value" classname="com.carlosjimz87.nqueens.data.sources.FakeStoreManagerTest" time="0.0"/>
+  <testcase name="update block receives current value" classname="com.carlosjimz87.nqueens.data.sources.FakeStoreManagerTest" time="0.001"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

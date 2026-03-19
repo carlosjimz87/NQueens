@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.carlosjimz87.nqueens.common.UtilsTest" tests="5" skipped="0" failures="0" errors="0" timestamp="2026-03-19T10:42:11.381Z" hostname="vass-07856.local" time="0.002">
+  <properties/>
+  <testcase name="formatElapsed returns 00_00 for zero millis" classname="com.carlosjimz87.nqueens.common.UtilsTest" time="0.001"/>
+  <testcase name="formatElapsed returns 10_05 for 605000 millis" classname="com.carlosjimz87.nqueens.common.UtilsTest" time="0.0"/>
+  <testcase name="formatElapsed returns 01_30 for 90000 millis" classname="com.carlosjimz87.nqueens.common.UtilsTest" time="0.001"/>
+  <testcase name="formatElapsed returns 00_01 for 1000 millis" classname="com.carlosjimz87.nqueens.common.UtilsTest" time="0.0"/>
+  <testcase name="formatElapsed returns 01_00 for 60000 millis" classname="com.carlosjimz87.nqueens.common.UtilsTest" time="0.0"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

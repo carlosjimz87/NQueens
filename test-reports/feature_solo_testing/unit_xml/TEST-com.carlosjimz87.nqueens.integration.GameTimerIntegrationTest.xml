@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.carlosjimz87.nqueens.integration.GameTimerIntegrationTest" tests="3" skipped="0" failures="0" errors="0" timestamp="2026-03-19T10:42:11.621Z" hostname="vass-07856.local" time="0.024">
+  <properties/>
+  <testcase name="timer reset is called on ResetGame and elapsed is set back to zero" classname="com.carlosjimz87.nqueens.integration.GameTimerIntegrationTest" time="0.02"/>
+  <testcase name="timer start is NOT called again on subsequent queen placements" classname="com.carlosjimz87.nqueens.integration.GameTimerIntegrationTest" time="0.003"/>
+  <testcase name="timer start is called exactly once when the first queen is placed" classname="com.carlosjimz87.nqueens.integration.GameTimerIntegrationTest" time="0.001"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

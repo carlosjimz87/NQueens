@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.carlosjimz87.nqueens.presentation.board.state.BoardStateTest" tests="6" skipped="0" failures="0" errors="0" timestamp="2026-03-19T10:42:58.852Z" hostname="vass-07856.local" time="0.002">
+  <properties/>
+  <testcase name="conflicts returns Empty when gameState is null" classname="com.carlosjimz87.nqueens.presentation.board.state.BoardStateTest" time="0.001"/>
+  <testcase name="queens returns gameState queens when gameState is present" classname="com.carlosjimz87.nqueens.presentation.board.state.BoardStateTest" time="0.0"/>
+  <testcase name="default state has null boardSize, false isLoading, Normal phase, and no error" classname="com.carlosjimz87.nqueens.presentation.board.state.BoardStateTest" time="0.0"/>
+  <testcase name="conflicts returns gameState conflicts when gameState is present" classname="com.carlosjimz87.nqueens.presentation.board.state.BoardStateTest" time="0.0"/>
+  <testcase name="BoardPhase enum has exactly three values" classname="com.carlosjimz87.nqueens.presentation.board.state.BoardStateTest" time="0.001"/>
+  <testcase name="queens returns empty set when gameState is null" classname="com.carlosjimz87.nqueens.presentation.board.state.BoardStateTest" time="0.0"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

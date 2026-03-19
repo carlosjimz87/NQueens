@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.carlosjimz87.nqueens.presentation.board.state.BoardStateTest" tests="5" skipped="0" failures="0" errors="0" timestamp="2026-03-19T10:42:11.675Z" hostname="vass-07856.local" time="0.004">
+  <properties/>
+  <testcase name="conflicts returns the conflicts stored in gameState" classname="com.carlosjimz87.nqueens.presentation.board.state.BoardStateTest" time="0.003"/>
+  <testcase name="queens returns queens from gameState when not null" classname="com.carlosjimz87.nqueens.presentation.board.state.BoardStateTest" time="0.0"/>
+  <testcase name="conflicts returns Conflicts_Empty when gameState is null" classname="com.carlosjimz87.nqueens.presentation.board.state.BoardStateTest" time="0.0"/>
+  <testcase name="default BoardState has Normal phase, no loading, no error, zero elapsed" classname="com.carlosjimz87.nqueens.presentation.board.state.BoardStateTest" time="0.0"/>
+  <testcase name="queens returns empty set when gameState is null" classname="com.carlosjimz87.nqueens.presentation.board.state.BoardStateTest" time="0.0"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

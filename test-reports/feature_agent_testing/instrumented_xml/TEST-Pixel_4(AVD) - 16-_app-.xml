@@ -1,0 +1,51 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<testsuite name="com.carlosjimz87.nqueens.ExampleInstrumentedTest" tests="43" failures="0" errors="0" skipped="0" time="45.725" timestamp="2026-03-19T10:44:06" hostname="localhost">
+  <properties>
+    <property name="device" value="Pixel_4(AVD) - 16" />
+    <property name="flavor" value="" />
+    <property name="project" value=":app" />
+  </properties>
+  <testcase name="useAppContext" classname="com.carlosjimz87.nqueens.ExampleInstrumentedTest" time="0.017" />
+  <testcase name="clicking_decrease_decrements_value" classname="com.carlosjimz87.nqueens.ui.composables.dialogs.BoardSizeDialogTest" time="1.304" />
+  <testcase name="clicking_increase_increments_value" classname="com.carlosjimz87.nqueens.ui.composables.dialogs.BoardSizeDialogTest" time="0.998" />
+  <testcase name="decrease_and_increase_buttons_have_content_descriptions" classname="com.carlosjimz87.nqueens.ui.composables.dialogs.BoardSizeDialogTest" time="1.231" />
+  <testcase name="displays_title_and_initial_value" classname="com.carlosjimz87.nqueens.ui.composables.dialogs.BoardSizeDialogTest" time="1.205" />
+  <testcase name="shows_confirm_button_with_correct_text" classname="com.carlosjimz87.nqueens.ui.composables.dialogs.BoardSizeDialogTest" time="0.847" />
+  <testcase name="cancel_button_hidden_when_dismissEnabled_is_false" classname="com.carlosjimz87.nqueens.ui.composables.dialogs.BoardSizeDialogTest" time="1.286" />
+  <testcase name="cancel_button_visible_when_dismissEnabled_is_true" classname="com.carlosjimz87.nqueens.ui.composables.dialogs.BoardSizeDialogTest" time="1.194" />
+  <testcase name="decrease_button_disabled_at_min_value" classname="com.carlosjimz87.nqueens.ui.composables.dialogs.BoardSizeDialogTest" time="0.797" />
+  <testcase name="clicking_confirm_after_increase_calls_onConfirm_with_incremented_value" classname="com.carlosjimz87.nqueens.ui.composables.dialogs.BoardSizeDialogTest" time="0.953" />
+  <testcase name="clicking_confirm_calls_onConfirm_with_current_value" classname="com.carlosjimz87.nqueens.ui.composables.dialogs.BoardSizeDialogTest" time="0.85" />
+  <testcase name="increase_button_disabled_at_max_value" classname="com.carlosjimz87.nqueens.ui.composables.dialogs.BoardSizeDialogTest" time="0.659" />
+  <testcase name="clicking_cancel_calls_onDismiss" classname="com.carlosjimz87.nqueens.ui.composables.dialogs.BoardSizeDialogTest" time="0.994" />
+  <testcase name="displays_queens_chip_with_size" classname="com.carlosjimz87.nqueens.ui.composables.dialogs.WinDialogTest" time="0.874" />
+  <testcase name="hides_rank_chip_when_both_ranks_are_zero" classname="com.carlosjimz87.nqueens.ui.composables.dialogs.WinDialogTest" time="1.169" />
+  <testcase name="all_action_buttons_are_displayed_and_clickable" classname="com.carlosjimz87.nqueens.ui.composables.dialogs.WinDialogTest" time="0.918" />
+  <testcase name="displays_You_Won_title" classname="com.carlosjimz87.nqueens.ui.composables.dialogs.WinDialogTest" time="1.192" />
+  <testcase name="clicking_See_Leaderboard_calls_onShowStats" classname="com.carlosjimz87.nqueens.ui.composables.dialogs.WinDialogTest" time="0.798" />
+  <testcase name="displays_time_chip_with_formatted_elapsed" classname="com.carlosjimz87.nqueens.ui.composables.dialogs.WinDialogTest" time="0.868" />
+  <testcase name="displays_rank_chip_when_ranks_are_positive" classname="com.carlosjimz87.nqueens.ui.composables.dialogs.WinDialogTest" time="0.928" />
+  <testcase name="clicking_Next_level_calls_onNextLevel" classname="com.carlosjimz87.nqueens.ui.composables.dialogs.WinDialogTest" time="0.872" />
+  <testcase name="displays_moves_chip_with_move_count" classname="com.carlosjimz87.nqueens.ui.composables.dialogs.WinDialogTest" time="0.84" />
+  <testcase name="clicking_Play_again_calls_onPlayAgain" classname="com.carlosjimz87.nqueens.ui.composables.dialogs.WinDialogTest" time="0.852" />
+  <testcase name="notStarted_shows_queens_zero_and_place_first_queen" classname="com.carlosjimz87.nqueens.ui.composables.hud.GameHudTest" time="1.115" />
+  <testcase name="buttons_disabled_when_isLoading_true" classname="com.carlosjimz87.nqueens.ui.composables.hud.GameHudTest" time="1.15" />
+  <testcase name="clicking_change_button_calls_onChange" classname="com.carlosjimz87.nqueens.ui.composables.hud.GameHudTest" time="1.183" />
+  <testcase name="all_action_buttons_have_content_descriptions" classname="com.carlosjimz87.nqueens.ui.composables.hud.GameHudTest" time="1.142" />
+  <testcase name="displays_level_with_correct_size" classname="com.carlosjimz87.nqueens.ui.composables.hud.GameHudTest" time="1.077" />
+  <testcase name="clicking_stats_button_calls_onStats" classname="com.carlosjimz87.nqueens.ui.composables.hud.GameHudTest" time="1.102" />
+  <testcase name="inProgress_shows_queens_placed_and_conflicts" classname="com.carlosjimz87.nqueens.ui.composables.hud.GameHudTest" time="1.114" />
+  <testcase name="displays_formatted_elapsed_time" classname="com.carlosjimz87.nqueens.ui.composables.hud.GameHudTest" time="1.109" />
+  <testcase name="clicking_reset_button_calls_onReset" classname="com.carlosjimz87.nqueens.ui.composables.hud.GameHudTest" time="1.069" />
+  <testcase name="solved_shows_all_queens_and_solved_in_moves" classname="com.carlosjimz87.nqueens.ui.composables.hud.GameHudTest" time="1.048" />
+  <testcase name="displays_entries_with_correct_rank_and_formatted_time" classname="com.carlosjimz87.nqueens.ui.composables.stats.StatsTableTest" time="0.788" />
+  <testcase name="displays_entry_moves_count" classname="com.carlosjimz87.nqueens.ui.composables.stats.StatsTableTest" time="1.116" />
+  <testcase name="populated_leaderboard_shows_entries" classname="com.carlosjimz87.nqueens.ui.composables.stats.StatsTableTest" time="1.182" />
+  <testcase name="displays_header_row_with_rank_time_moves" classname="com.carlosjimz87.nqueens.ui.composables.stats.StatsTableTest" time="1.122" />
+  <testcase name="empty_leaderboard_shows_no_results" classname="com.carlosjimz87.nqueens.ui.composables.stats.StatsTableTest" time="1.164" />
+  <testcase name="displays_close_button" classname="com.carlosjimz87.nqueens.ui.composables.stats.StatsTableTest" time="1.132" />
+  <testcase name="clicking_close_calls_onClose_callback" classname="com.carlosjimz87.nqueens.ui.composables.stats.StatsTableTest" time="1.178" />
+  <testcase name="empty_state_shows_no_results_message" classname="com.carlosjimz87.nqueens.ui.composables.stats.StatsTableTest" time="1.093" />
+  <testcase name="displays_board_size_chip" classname="com.carlosjimz87.nqueens.ui.composables.stats.StatsTableTest" time="0.788" />
+  <testcase name="displays_leaderboard_title" classname="com.carlosjimz87.nqueens.ui.composables.stats.StatsTableTest" time="1.162" />
+</testsuite>

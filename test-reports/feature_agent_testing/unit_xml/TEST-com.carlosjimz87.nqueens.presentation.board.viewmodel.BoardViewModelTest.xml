@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.carlosjimz87.nqueens.presentation.board.viewmodel.BoardViewModelTest" tests="30" skipped="0" failures="0" errors="0" timestamp="2026-03-19T10:42:58.861Z" hostname="vass-07856.local" time="0.112">
+  <properties/>
+  <testcase name="placing N queens with zero conflicts moves game to Solved and triggers win phase" classname="com.carlosjimz87.nqueens.presentation.board.viewmodel.BoardViewModelTest" time="0.021"/>
+  <testcase name="placing second queen does not start timer again" classname="com.carlosjimz87.nqueens.presentation.board.viewmodel.BoardViewModelTest" time="0.002"/>
+  <testcase name="removing all queens returns game to NotStarted" classname="com.carlosjimz87.nqueens.presentation.board.viewmodel.BoardViewModelTest" time="0.003"/>
+  <testcase name="solving puzzle emits SOLVED sound" classname="com.carlosjimz87.nqueens.presentation.board.viewmodel.BoardViewModelTest" time="0.008"/>
+  <testcase name="ResetGame resets timer" classname="com.carlosjimz87.nqueens.presentation.board.viewmodel.BoardViewModelTest" time="0.004"/>
+  <testcase name="ClickCell adds queen when cell is empty" classname="com.carlosjimz87.nqueens.presentation.board.viewmodel.BoardViewModelTest" time="0.002"/>
+  <testcase name="ClickCell removes queen when cell already has queen" classname="com.carlosjimz87.nqueens.presentation.board.viewmodel.BoardViewModelTest" time="0.003"/>
+  <testcase name="init with valid initial size sets boardSize and ends not loading" classname="com.carlosjimz87.nqueens.presentation.board.viewmodel.BoardViewModelTest" time="0.002"/>
+  <testcase name="ClickCell on empty cell emits PlaySound QUEEN_PLACED" classname="com.carlosjimz87.nqueens.presentation.board.viewmodel.BoardViewModelTest" time="0.003"/>
+  <testcase name="changing to a new valid size resets queens and sets NotStarted" classname="com.carlosjimz87.nqueens.presentation.board.viewmodel.BoardViewModelTest" time="0.003"/>
+  <testcase name="solving puzzle stops timer" classname="com.carlosjimz87.nqueens.presentation.board.viewmodel.BoardViewModelTest" time="0.004"/>
+  <testcase name="solving puzzle sets latestRank" classname="com.carlosjimz87.nqueens.presentation.board.viewmodel.BoardViewModelTest" time="0.003"/>
+  <testcase name="SetBoardSize valid updates boardSize ends not loading and clears queens" classname="com.carlosjimz87.nqueens.presentation.board.viewmodel.BoardViewModelTest" time="0.003"/>
+  <testcase name="SetBoardSize resets timer" classname="com.carlosjimz87.nqueens.presentation.board.viewmodel.BoardViewModelTest" time="0.002"/>
+  <testcase name="SetBoardSize invalid big sets error and keeps last valid boardSize" classname="com.carlosjimz87.nqueens.presentation.board.viewmodel.BoardViewModelTest" time="0.003"/>
+  <testcase name="first queen placement starts timer" classname="com.carlosjimz87.nqueens.presentation.board.viewmodel.BoardViewModelTest" time="0.003"/>
+  <testcase name="leaderboards delegates to repository" classname="com.carlosjimz87.nqueens.presentation.board.viewmodel.BoardViewModelTest" time="0.002"/>
+  <testcase name="ClickCell on occupied cell emits PlaySound QUEEN_REMOVED and not QUEEN_PLACED" classname="com.carlosjimz87.nqueens.presentation.board.viewmodel.BoardViewModelTest" time="0.009"/>
+  <testcase name="SetBoardSize invalid emits ShowSnackbar effect" classname="com.carlosjimz87.nqueens.presentation.board.viewmodel.BoardViewModelTest" time="0.002"/>
+  <testcase name="init sets NotStarted and elapsed is zero" classname="com.carlosjimz87.nqueens.presentation.board.viewmodel.BoardViewModelTest" time="0.003"/>
+  <testcase name="solving puzzle records stats" classname="com.carlosjimz87.nqueens.presentation.board.viewmodel.BoardViewModelTest" time="0.002"/>
+  <testcase name="placing first queen moves game to InProgress" classname="com.carlosjimz87.nqueens.presentation.board.viewmodel.BoardViewModelTest" time="0.003"/>
+  <testcase name="placing queen with conflict emits CONFLICT_DETECTED sound" classname="com.carlosjimz87.nqueens.presentation.board.viewmodel.BoardViewModelTest" time="0.003"/>
+  <testcase name="ResetGame re-applies size clears latestRank sets phase Normal" classname="com.carlosjimz87.nqueens.presentation.board.viewmodel.BoardViewModelTest" time="0.003"/>
+  <testcase name="WinAnimationFinished sets boardPhase WinFrozen" classname="com.carlosjimz87.nqueens.presentation.board.viewmodel.BoardViewModelTest" time="0.003"/>
+  <testcase name="SetBoardSize invalid small sets error and keeps last valid boardSize and queens" classname="com.carlosjimz87.nqueens.presentation.board.viewmodel.BoardViewModelTest" time="0.003"/>
+  <testcase name="SetBoardSize valid emits BOARD_RESET sound" classname="com.carlosjimz87.nqueens.presentation.board.viewmodel.BoardViewModelTest" time="0.002"/>
+  <testcase name="EnterWinAnimation sets boardPhase WinAnimating" classname="com.carlosjimz87.nqueens.presentation.board.viewmodel.BoardViewModelTest" time="0.003"/>
+  <testcase name="elapsedMillis updates from timer" classname="com.carlosjimz87.nqueens.presentation.board.viewmodel.BoardViewModelTest" time="0.002"/>
+  <testcase name="SetBoardSize same size does nothing" classname="com.carlosjimz87.nqueens.presentation.board.viewmodel.BoardViewModelTest" time="0.003"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

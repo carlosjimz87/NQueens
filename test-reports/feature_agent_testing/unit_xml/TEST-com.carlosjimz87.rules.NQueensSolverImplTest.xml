@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.carlosjimz87.rules.NQueensSolverImplTest" tests="8" skipped="0" failures="0" errors="0" timestamp="2026-03-19T10:43:01.095Z" hostname="vass-07856.local" time="0.001">
+  <properties/>
+  <testcase name="setBoardSize with size less than 4 returns SizeTooSmall error" classname="com.carlosjimz87.rules.NQueensSolverImplTest" time="0.0"/>
+  <testcase name="placing conflicting queens updates conflicts" classname="com.carlosjimz87.rules.NQueensSolverImplTest" time="0.0"/>
+  <testcase name="removing last queen on solved board returns to NotStarted" classname="com.carlosjimz87.rules.NQueensSolverImplTest" time="0.0"/>
+  <testcase name="setBoardSize with valid size updates game state correctly" classname="com.carlosjimz87.rules.NQueensSolverImplTest" time="0.0"/>
+  <testcase name="solving the puzzle updates game status to Solved" classname="com.carlosjimz87.rules.NQueensSolverImplTest" time="0.0"/>
+  <testcase name="removeQueen removes queen and updates state" classname="com.carlosjimz87.rules.NQueensSolverImplTest" time="0.0"/>
+  <testcase name="placeQueen adds queen and updates state" classname="com.carlosjimz87.rules.NQueensSolverImplTest" time="0.0"/>
+  <testcase name="setBoardSize with size greater than 20 returns SizeTooBig error" classname="com.carlosjimz87.rules.NQueensSolverImplTest" time="0.0"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

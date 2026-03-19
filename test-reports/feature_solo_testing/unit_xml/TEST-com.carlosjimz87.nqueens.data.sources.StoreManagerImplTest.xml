@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.carlosjimz87.nqueens.data.sources.StoreManagerImplTest" tests="6" skipped="0" failures="0" errors="0" timestamp="2026-03-19T10:42:11.477Z" hostname="vass-07856.local" time="0.136">
+  <properties/>
+  <testcase name="corrupted json falls back to defaultValue" classname="com.carlosjimz87.nqueens.data.sources.StoreManagerImplTest" time="0.056"/>
+  <testcase name="update persists value and data emits it" classname="com.carlosjimz87.nqueens.data.sources.StoreManagerImplTest" time="0.015"/>
+  <testcase name="update falls back to defaultValue when key exists but json is corrupted" classname="com.carlosjimz87.nqueens.data.sources.StoreManagerImplTest" time="0.029"/>
+  <testcase name="data emits defaultValue when key not present" classname="com.carlosjimz87.nqueens.data.sources.StoreManagerImplTest" time="0.004"/>
+  <testcase name="update receives defaultValue when key is missing" classname="com.carlosjimz87.nqueens.data.sources.StoreManagerImplTest" time="0.008"/>
+  <testcase name="update receives decoded value when key exists with valid json" classname="com.carlosjimz87.nqueens.data.sources.StoreManagerImplTest" time="0.022"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

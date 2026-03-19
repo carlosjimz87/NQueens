@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.carlosjimz87.nqueens.data.model.StatsStateSerializationTest" tests="6" skipped="0" failures="0" errors="0" timestamp="2026-03-19T10:42:58.585Z" hostname="vass-07856.local" time="0.036">
+  <properties/>
+  <testcase name="ScoreEntry preserves all fields through serialization" classname="com.carlosjimz87.nqueens.data.model.StatsStateSerializationTest" time="0.02"/>
+  <testcase name="StatsState with entries round-trips correctly" classname="com.carlosjimz87.nqueens.data.model.StatsStateSerializationTest" time="0.008"/>
+  <testcase name="empty StatsState round-trips correctly" classname="com.carlosjimz87.nqueens.data.model.StatsStateSerializationTest" time="0.001"/>
+  <testcase name="deserialization with unknown keys succeeds when ignoreUnknownKeys is true" classname="com.carlosjimz87.nqueens.data.model.StatsStateSerializationTest" time="0.004"/>
+  <testcase name="multiple entries maintain order after round-trip" classname="com.carlosjimz87.nqueens.data.model.StatsStateSerializationTest" time="0.002"/>
+  <testcase name="default values apply when entries field is missing from JSON" classname="com.carlosjimz87.nqueens.data.model.StatsStateSerializationTest" time="0.0"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

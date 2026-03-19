@@ -1,0 +1,13 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<testsuite name="com.carlosjimz87.nqueens.BoardScreenInstrumentedTest" tests="5" failures="0" errors="0" skipped="0" time="7.758" timestamp="2026-03-19T10:42:44" hostname="localhost">
+  <properties>
+    <property name="device" value="Pixel_4(AVD) - 16" />
+    <property name="flavor" value="" />
+    <property name="project" value=":app" />
+  </properties>
+  <testcase name="setup_dialog_appears_on_launch_and_board_renders_after_start" classname="com.carlosjimz87.nqueens.BoardScreenInstrumentedTest" time="1.795" />
+  <testcase name="reset_button_clears_all_placed_queens" classname="com.carlosjimz87.nqueens.BoardScreenInstrumentedTest" time="1.661" />
+  <testcase name="solving_4x4_board_displays_win_dialog" classname="com.carlosjimz87.nqueens.BoardScreenInstrumentedTest" time="2.102" />
+  <testcase name="tapping_a_cell_places_a_queen_on_the_board" classname="com.carlosjimz87.nqueens.BoardScreenInstrumentedTest" time="1.264" />
+  <testcase name="useAppContext" classname="com.carlosjimz87.nqueens.ExampleInstrumentedTest" time="0.043" />
+</testsuite>

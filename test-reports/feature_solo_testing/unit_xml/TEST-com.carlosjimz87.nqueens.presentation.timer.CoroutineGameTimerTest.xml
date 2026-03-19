@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.carlosjimz87.nqueens.presentation.timer.CoroutineGameTimerTest" tests="5" skipped="0" failures="0" errors="0" timestamp="2026-03-19T10:42:11.779Z" hostname="vass-07856.local" time="0.623">
+  <properties/>
+  <testcase name="initial elapsed is zero" classname="com.carlosjimz87.nqueens.presentation.timer.CoroutineGameTimerTest" time="0.0"/>
+  <testcase name="elapsed is non-zero after start and delay" classname="com.carlosjimz87.nqueens.presentation.timer.CoroutineGameTimerTest" time="0.207"/>
+  <testcase name="elapsed does not increment after stop" classname="com.carlosjimz87.nqueens.presentation.timer.CoroutineGameTimerTest" time="0.416"/>
+  <testcase name="reset without starting keeps elapsed at zero" classname="com.carlosjimz87.nqueens.presentation.timer.CoroutineGameTimerTest" time="0.0"/>
+  <testcase name="stop without starting does not throw and elapsed remains zero" classname="com.carlosjimz87.nqueens.presentation.timer.CoroutineGameTimerTest" time="0.0"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

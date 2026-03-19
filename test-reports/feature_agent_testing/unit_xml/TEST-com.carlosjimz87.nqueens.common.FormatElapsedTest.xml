@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.carlosjimz87.nqueens.common.FormatElapsedTest" tests="8" skipped="0" failures="0" errors="0" timestamp="2026-03-19T10:42:58.580Z" hostname="vass-07856.local" time="0.002">
+  <properties/>
+  <testcase name="zero millis returns 00 colon 00" classname="com.carlosjimz87.nqueens.common.FormatElapsedTest" time="0.0"/>
+  <testcase name="ten minutes returns 10 colon 00" classname="com.carlosjimz87.nqueens.common.FormatElapsedTest" time="0.0"/>
+  <testcase name="sub-second millis truncates to 00 colon 00" classname="com.carlosjimz87.nqueens.common.FormatElapsedTest" time="0.0"/>
+  <testcase name="exactly 1000 millis returns 00 colon 01" classname="com.carlosjimz87.nqueens.common.FormatElapsedTest" time="0.0"/>
+  <testcase name="60 seconds returns 01 colon 00" classname="com.carlosjimz87.nqueens.common.FormatElapsedTest" time="0.0"/>
+  <testcase name="over one hour formats minutes beyond 59" classname="com.carlosjimz87.nqueens.common.FormatElapsedTest" time="0.0"/>
+  <testcase name="61 seconds returns 01 colon 01" classname="com.carlosjimz87.nqueens.common.FormatElapsedTest" time="0.0"/>
+  <testcase name="59 seconds returns 00 colon 59" classname="com.carlosjimz87.nqueens.common.FormatElapsedTest" time="0.0"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

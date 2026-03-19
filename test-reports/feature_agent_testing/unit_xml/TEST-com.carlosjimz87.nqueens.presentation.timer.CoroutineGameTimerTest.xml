@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.carlosjimz87.nqueens.presentation.timer.CoroutineGameTimerTest" tests="10" skipped="0" failures="0" errors="0" timestamp="2026-03-19T10:42:58.977Z" hostname="vass-07856.local" time="2.109">
+  <properties/>
+  <testcase name="initial elapsed is zero" classname="com.carlosjimz87.nqueens.presentation.timer.CoroutineGameTimerTest" time="0.0"/>
+  <testcase name="stop can be called multiple times without error" classname="com.carlosjimz87.nqueens.presentation.timer.CoroutineGameTimerTest" time="0.108"/>
+  <testcase name="start begins ticking and elapsed increases" classname="com.carlosjimz87.nqueens.presentation.timer.CoroutineGameTimerTest" time="0.159"/>
+  <testcase name="reset while running then start produces fresh timing" classname="com.carlosjimz87.nqueens.presentation.timer.CoroutineGameTimerTest" time="0.318"/>
+  <testcase name="stop when not running does not crash" classname="com.carlosjimz87.nqueens.presentation.timer.CoroutineGameTimerTest" time="0.0"/>
+  <testcase name="reset clears elapsed to zero and stops the timer" classname="com.carlosjimz87.nqueens.presentation.timer.CoroutineGameTimerTest" time="0.31"/>
+  <testcase name="stop pauses the timer and elapsed stays constant" classname="com.carlosjimz87.nqueens.presentation.timer.CoroutineGameTimerTest" time="0.321"/>
+  <testcase name="start while already running is a no-op and does not restart" classname="com.carlosjimz87.nqueens.presentation.timer.CoroutineGameTimerTest" time="0.308"/>
+  <testcase name="elapsed flow value is non-negative at all times" classname="com.carlosjimz87.nqueens.presentation.timer.CoroutineGameTimerTest" time="0.275"/>
+  <testcase name="start after stop resumes elapsed from previous value" classname="com.carlosjimz87.nqueens.presentation.timer.CoroutineGameTimerTest" time="0.308"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

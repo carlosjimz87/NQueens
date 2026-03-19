@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.carlosjimz87.nqueens.presentation.board.viewmodel.BoardViewModelExtendedTest" tests="8" skipped="0" failures="0" errors="0" timestamp="2026-03-19T10:42:11.681Z" hostname="vass-07856.local" time="0.037">
+  <properties/>
+  <testcase name="conflict is cleared in state after removing the conflicting queen" classname="com.carlosjimz87.nqueens.presentation.board.viewmodel.BoardViewModelExtendedTest" time="0.003"/>
+  <testcase name="winning sets latestRank to non-null value in state" classname="com.carlosjimz87.nqueens.presentation.board.viewmodel.BoardViewModelExtendedTest" time="0.004"/>
+  <testcase name="ClickCell emits CONFLICT_DETECTED sound for a queen placed in conflict" classname="com.carlosjimz87.nqueens.presentation.board.viewmodel.BoardViewModelExtendedTest" time="0.009"/>
+  <testcase name="SetBoardSize too big emits ShowSnackbar with correct key" classname="com.carlosjimz87.nqueens.presentation.board.viewmodel.BoardViewModelExtendedTest" time="0.004"/>
+  <testcase name="SetBoardSize too small emits ShowSnackbar with correct key" classname="com.carlosjimz87.nqueens.presentation.board.viewmodel.BoardViewModelExtendedTest" time="0.003"/>
+  <testcase name="ClickCell emits QUEEN_PLACED and not CONFLICT_DETECTED for non-conflicting placement" classname="com.carlosjimz87.nqueens.presentation.board.viewmodel.BoardViewModelExtendedTest" time="0.009"/>
+  <testcase name="winning emits SOLVED sound" classname="com.carlosjimz87.nqueens.presentation.board.viewmodel.BoardViewModelExtendedTest" time="0.003"/>
+  <testcase name="SetBoardSize valid emits BOARD_RESET sound" classname="com.carlosjimz87.nqueens.presentation.board.viewmodel.BoardViewModelExtendedTest" time="0.002"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

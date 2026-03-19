@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.carlosjimz87.nqueens.data.repo.StatsRepositoryImplTest" tests="12" skipped="0" failures="0" errors="0" timestamp="2026-03-19T10:42:58.624Z" hostname="vass-07856.local" time="0.086">
+  <properties/>
+  <testcase name="stats flow emits updated state after record" classname="com.carlosjimz87.nqueens.data.repo.StatsRepositoryImplTest" time="0.052"/>
+  <testcase name="leaderboards is reactive to store changes" classname="com.carlosjimz87.nqueens.data.repo.StatsRepositoryImplTest" time="0.007"/>
+  <testcase name="record ignores when same (size+moves) but worse or equal time" classname="com.carlosjimz87.nqueens.data.repo.StatsRepositoryImplTest" time="0.002"/>
+  <testcase name="record replaces existing when same (size+moves) but better time" classname="com.carlosjimz87.nqueens.data.repo.StatsRepositoryImplTest" time="0.001"/>
+  <testcase name="leaderboards respects limit parameter" classname="com.carlosjimz87.nqueens.data.repo.StatsRepositoryImplTest" time="0.001"/>
+  <testcase name="record multiple times same size different moves appends all" classname="com.carlosjimz87.nqueens.data.repo.StatsRepositoryImplTest" time="0.005"/>
+  <testcase name="leaderboards returns empty for size with no entries" classname="com.carlosjimz87.nqueens.data.repo.StatsRepositoryImplTest" time="0.003"/>
+  <testcase name="record for different sizes are independent" classname="com.carlosjimz87.nqueens.data.repo.StatsRepositoryImplTest" time="0.002"/>
+  <testcase name="record with limit truncates leaderboard rankings" classname="com.carlosjimz87.nqueens.data.repo.StatsRepositoryImplTest" time="0.003"/>
+  <testcase name="leaderboards sorts by time ascending then by moves" classname="com.carlosjimz87.nqueens.data.repo.StatsRepositoryImplTest" time="0.003"/>
+  <testcase name="record appends when no existing (size+moves) and leaderboards reflect it" classname="com.carlosjimz87.nqueens.data.repo.StatsRepositoryImplTest" time="0.002"/>
+  <testcase name="leaderboards sorts by moves ascending then by time" classname="com.carlosjimz87.nqueens.data.repo.StatsRepositoryImplTest" time="0.003"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

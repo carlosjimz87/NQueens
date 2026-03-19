@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.carlosjimz87.nqueens.integration.StatsFlowIntegrationTest" tests="4" skipped="0" failures="0" errors="0" timestamp="2026-03-19T10:42:11.648Z" hostname="vass-07856.local" time="0.025">
+  <properties/>
+  <testcase name="leaderboard byTime is ordered ascending by timeMillis after multiple records" classname="com.carlosjimz87.nqueens.integration.StatsFlowIntegrationTest" time="0.013"/>
+  <testcase name="leaderboard flow emits updated entry immediately after record is called" classname="com.carlosjimz87.nqueens.integration.StatsFlowIntegrationTest" time="0.004"/>
+  <testcase name="leaderboard respects the limit parameter and only returns top N entries" classname="com.carlosjimz87.nqueens.integration.StatsFlowIntegrationTest" time="0.004"/>
+  <testcase name="leaderboard flow emits empty lists before any record is stored" classname="com.carlosjimz87.nqueens.integration.StatsFlowIntegrationTest" time="0.004"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>
